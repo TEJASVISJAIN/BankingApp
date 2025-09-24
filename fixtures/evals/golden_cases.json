@@ -1,0 +1,297 @@
+[
+  {
+    "id": "eval_001",
+    "name": "Card Lost - Freeze Required",
+    "description": "Customer reports lost card, should trigger freeze with OTP",
+    "input": {
+      "customerId": "cust_001",
+      "transactionId": "txn_lost_card_001",
+      "context": {
+        "amount": 0,
+        "merchant": "Card Lost Report",
+        "mcc": "6011",
+        "device": "unknown",
+        "location": "customer_service"
+      }
+    },
+    "expected": {
+      "riskLevel": "high",
+      "recommendation": "block",
+      "actions": ["freeze_card"],
+      "requiresOtp": true,
+      "confidence": 0.9
+    },
+    "category": "card_security"
+  },
+  {
+    "id": "eval_002", 
+    "name": "Unauthorized Charge - Dispute Required",
+    "description": "High amount unauthorized charge should trigger dispute",
+    "input": {
+      "customerId": "cust_002",
+      "transactionId": "txn_unauthorized_001",
+      "context": {
+        "amount": 4999,
+        "merchant": "Unknown Merchant",
+        "mcc": "5411",
+        "device": "new_device",
+        "location": "suspicious_location"
+      }
+    },
+    "expected": {
+      "riskLevel": "high",
+      "recommendation": "block",
+      "actions": ["open_dispute"],
+      "requiresVerification": true,
+      "confidence": 0.85
+    },
+    "category": "fraud_detection"
+  },
+  {
+    "id": "eval_003",
+    "name": "Duplicate Transaction - No Action",
+    "description": "Duplicate pending vs captured should not trigger dispute",
+    "input": {
+      "customerId": "cust_003", 
+      "transactionId": "txn_duplicate_001",
+      "context": {
+        "amount": 150,
+        "merchant": "Grocery Store",
+        "mcc": "5411",
+        "device": "known_device",
+        "location": "home_location",
+        "isDuplicate": true
+      }
+    },
+    "expected": {
+      "riskLevel": "low",
+      "recommendation": "monitor",
+      "actions": [],
+      "requiresVerification": false,
+      "confidence": 0.8
+    },
+    "category": "false_positive"
+  },
+  {
+    "id": "eval_004",
+    "name": "Geo-Velocity Violation",
+    "description": "Impossible travel distance should trigger high risk",
+    "input": {
+      "customerId": "cust_004",
+      "transactionId": "txn_geo_velocity_001", 
+      "context": {
+        "amount": 2500,
+        "merchant": "ATM Withdrawal",
+        "mcc": "6011",
+        "device": "mobile_device",
+        "location": "new_york",
+        "previousLocation": "delhi",
+        "timeDifference": 30
+      }
+    },
+    "expected": {
+      "riskLevel": "high",
+      "recommendation": "block",
+      "actions": ["freeze_card", "contact_customer"],
+      "requiresOtp": true,
+      "confidence": 0.95
+    },
+    "category": "velocity_fraud"
+  },
+  {
+    "id": "eval_005",
+    "name": "Device Change + MCC Anomaly",
+    "description": "New device with unusual merchant category",
+    "input": {
+      "customerId": "cust_005",
+      "transactionId": "txn_device_mcc_001",
+      "context": {
+        "amount": 800,
+        "merchant": "Luxury Store",
+        "mcc": "5944",
+        "device": "new_device",
+        "location": "shopping_mall",
+        "mccAnomaly": true
+      }
+    },
+    "expected": {
+      "riskLevel": "medium",
+      "recommendation": "investigate",
+      "actions": ["contact_customer"],
+      "requiresVerification": false,
+      "confidence": 0.7
+    },
+    "category": "behavioral_anomaly"
+  },
+  {
+    "id": "eval_006",
+    "name": "Heavy Chargeback History",
+    "description": "Customer with multiple chargebacks should escalate",
+    "input": {
+      "customerId": "cust_006",
+      "transactionId": "txn_chargeback_heavy_001",
+      "context": {
+        "amount": 1200,
+        "merchant": "Online Store",
+        "mcc": "5999",
+        "device": "known_device",
+        "location": "home_location",
+        "chargebackHistory": 5
+      }
+    },
+    "expected": {
+      "riskLevel": "high",
+      "recommendation": "block",
+      "actions": ["escalate", "open_case"],
+      "requiresApproval": true,
+      "confidence": 0.9
+    },
+    "category": "reputation_based"
+  },
+  {
+    "id": "eval_007",
+    "name": "Risk Service Timeout - Fallback",
+    "description": "External risk service timeout should use fallback",
+    "input": {
+      "customerId": "cust_007",
+      "transactionId": "txn_timeout_001",
+      "context": {
+        "amount": 300,
+        "merchant": "Regular Store",
+        "mcc": "5411",
+        "device": "known_device",
+        "location": "normal_location",
+        "riskServiceTimeout": true
+      }
+    },
+    "expected": {
+      "riskLevel": "medium",
+      "recommendation": "investigate",
+      "actions": [],
+      "fallbackUsed": true,
+      "confidence": 0.6
+    },
+    "category": "fallback_scenario"
+  },
+  {
+    "id": "eval_008",
+    "name": "Rate Limit - 429 Response",
+    "description": "Rate limit exceeded should return 429",
+    "input": {
+      "customerId": "cust_008",
+      "transactionId": "txn_rate_limit_001",
+      "context": {
+        "amount": 100,
+        "merchant": "Test Merchant",
+        "mcc": "5411",
+        "device": "test_device",
+        "location": "test_location",
+        "rateLimitExceeded": true
+      }
+    },
+    "expected": {
+      "statusCode": 429,
+      "retryAfter": 60,
+      "error": "Rate limit exceeded"
+    },
+    "category": "rate_limiting"
+  },
+  {
+    "id": "eval_009",
+    "name": "Policy Block - Unfreeze Without Identity",
+    "description": "Unfreeze request without proper identity verification",
+    "input": {
+      "customerId": "cust_009",
+      "transactionId": "txn_policy_block_001",
+      "context": {
+        "action": "unfreeze_card",
+        "amount": 0,
+        "merchant": "Card Unfreeze",
+        "mcc": "6011",
+        "device": "unknown_device",
+        "identityVerified": false
+      }
+    },
+    "expected": {
+      "statusCode": 403,
+      "error": "Policy violation",
+      "reason": "Identity verification required"
+    },
+    "category": "policy_enforcement"
+  },
+  {
+    "id": "eval_010",
+    "name": "PII Message - Redaction Required",
+    "description": "Message containing PII should be redacted",
+    "input": {
+      "customerId": "cust_010",
+      "transactionId": "txn_pii_001",
+      "context": {
+        "amount": 50,
+        "merchant": "PII Test",
+        "mcc": "5411",
+        "device": "test_device",
+        "location": "test_location",
+        "message": "My PAN is 1234567890123456 and email is test@example.com"
+      }
+    },
+    "expected": {
+      "riskLevel": "low",
+      "recommendation": "monitor",
+      "piiDetected": true,
+      "redactedMessage": "My PAN is ****REDACTED**** and email is t***@example.com"
+    },
+    "category": "pii_redaction"
+  },
+  {
+    "id": "eval_011",
+    "name": "KB FAQ - Travel Notice",
+    "description": "Knowledge base lookup for travel notice setup",
+    "input": {
+      "customerId": "cust_011",
+      "transactionId": "txn_kb_travel_001",
+      "context": {
+        "amount": 200,
+        "merchant": "Airport Store",
+        "mcc": "5411",
+        "device": "mobile_device",
+        "location": "airport",
+        "query": "set travel notice"
+      }
+    },
+    "expected": {
+      "riskLevel": "low",
+      "recommendation": "monitor",
+      "kbResults": true,
+      "citations": ["Travel Notice Setup Guide"],
+      "actions": ["show_travel_notice_guide"]
+    },
+    "category": "knowledge_base"
+  },
+  {
+    "id": "eval_012",
+    "name": "Ambiguous Merchant - Disambiguation",
+    "description": "Ambiguous merchant name should prompt disambiguation",
+    "input": {
+      "customerId": "cust_012",
+      "transactionId": "txn_ambiguous_merchant_001",
+      "context": {
+        "amount": 75,
+        "merchant": "ABC Store",
+        "mcc": "5411",
+        "device": "known_device",
+        "location": "normal_location",
+        "ambiguousMerchant": true,
+        "candidates": ["ABC Store Inc", "ABC Store LLC"]
+      }
+    },
+    "expected": {
+      "riskLevel": "low",
+      "recommendation": "investigate",
+      "disambiguationRequired": true,
+      "candidates": ["ABC Store Inc", "ABC Store LLC"],
+      "confidence": 0.5
+    },
+    "category": "disambiguation"
+  }
+]

@@ -21,6 +21,7 @@ import triageRoutes from './routes/triage';
 import traceRoutes from './routes/traces';
 import actionRoutes from './routes/actions';
 import kbRoutes from './routes/kb';
+import evalRoutes from './routes/eval';
 
 const app = express();
 
@@ -104,6 +105,7 @@ app.use('/api/triage', apiKeyAuth, triageRoutes);
 app.use('/api/traces', apiKeyAuth, traceRoutes);
 app.use('/api/actions', apiKeyAuth, actionRoutes);
 app.use('/api/kb', apiKeyAuth, kbRoutes);
+app.use('/api/eval', apiKeyAuth, evalRoutes);
 
 // Error handling
 app.use(errorHandler);
