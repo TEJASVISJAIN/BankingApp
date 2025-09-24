@@ -8,6 +8,8 @@ import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import { apiKeyAuth } from './middleware/auth';
+import { redactionMiddleware, logRedactionMiddleware } from './middleware/redaction';
+import { rateLimiterService } from './services/rateLimiter';
 
 // Import routes
 import { ingestionRoutes } from './routes/ingestion';
@@ -17,6 +19,8 @@ import { healthRoutes } from './routes/health';
 import { metricsRoutes } from './routes/metrics';
 import triageRoutes from './routes/triage';
 import traceRoutes from './routes/traces';
+import actionRoutes from './routes/actions';
+import kbRoutes from './routes/kb';
 
 const app = express();
 
@@ -61,6 +65,31 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Request logging
 app.use(requestLogger);
 
+// PII redaction middleware
+app.use(redactionMiddleware);
+app.use(logRedactionMiddleware);
+
+// Rate limiting middleware
+app.use(async (req, res, next) => {
+  try {
+    const apiKey = req.headers['x-api-key'] as string;
+    if (apiKey) {
+      const rateLimitResult = await rateLimiterService.checkRateLimitByAPI(apiKey);
+      if (!rateLimitResult.allowed) {
+        return res.status(429).json({
+          error: 'Rate limit exceeded',
+          retryAfter: rateLimitResult.retryAfter,
+        });
+      }
+      res.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
+      res.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString());
+    }
+    next();
+  } catch (error) {
+    next();
+  }
+});
+
 // Health check (no auth required)
 app.use('/health', healthRoutes);
 
@@ -73,6 +102,8 @@ app.use('/api/insights', apiKeyAuth, insightsRoutes);
 app.use('/api/customer', apiKeyAuth, customerRoutes);
 app.use('/api/triage', apiKeyAuth, triageRoutes);
 app.use('/api/traces', apiKeyAuth, traceRoutes);
+app.use('/api/actions', apiKeyAuth, actionRoutes);
+app.use('/api/kb', apiKeyAuth, kbRoutes);
 
 // Error handling
 app.use(errorHandler);

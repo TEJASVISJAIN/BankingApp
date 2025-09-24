@@ -418,6 +418,69 @@ class ApiService {
       throw error
     }
   }
+
+  // Actions APIs
+  async freezeCard(cardId: string, otp?: string, customerId?: string): Promise<any> {
+    try {
+      const response = await api.post('/api/actions/freeze-card', {
+        cardId,
+        otp,
+        customerId,
+      })
+      return response.data
+    } catch (error) {
+      console.error('Failed to freeze card:', error)
+      throw error
+    }
+  }
+
+  async openDispute(txnId: string, reasonCode: string, confirm: boolean, customerId?: string): Promise<any> {
+    try {
+      const response = await api.post('/api/actions/open-dispute', {
+        txnId,
+        reasonCode,
+        confirm,
+        customerId,
+      })
+      return response.data
+    } catch (error) {
+      console.error('Failed to open dispute:', error)
+      throw error
+    }
+  }
+
+  async contactCustomer(request: { customerId: string; method: string; reason: string; priority?: string }): Promise<any> {
+    try {
+      const response = await api.post('/api/actions/contact-customer', request)
+      return response.data
+    } catch (error) {
+      console.error('Failed to contact customer:', error)
+      throw error
+    }
+  }
+
+  async generateOtp(customerId: string, action: string): Promise<any> {
+    try {
+      const response = await api.post('/api/actions/generate-otp', {
+        customerId,
+        action,
+      })
+      return response.data
+    } catch (error) {
+      console.error('Failed to generate OTP:', error)
+      throw error
+    }
+  }
+
+  async validateOtp(request: { customerId: string; action: string; otp: string }): Promise<any> {
+    try {
+      const response = await api.post('/api/actions/validate-otp', request)
+      return response.data
+    } catch (error) {
+      console.error('Failed to validate OTP:', error)
+      throw error
+    }
+  }
 }
 
 export const apiService = new ApiService()

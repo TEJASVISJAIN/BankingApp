@@ -224,6 +224,52 @@ CREATE INDEX idx_risk_signals_type ON risk_signals (signal_type);
 CREATE INDEX idx_risk_signals_severity ON risk_signals (severity);
 CREATE INDEX idx_risk_signals_score ON risk_signals (score);
 
+-- OTP requests table
+CREATE TABLE otp_requests (
+    id SERIAL PRIMARY KEY,
+    customer_id VARCHAR(50) NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    otp_code VARCHAR(10) NOT NULL,
+    attempts INTEGER DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    used_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Indexes for OTP requests
+CREATE INDEX idx_otp_requests_customer ON otp_requests (customer_id);
+CREATE INDEX idx_otp_requests_action ON otp_requests (action);
+CREATE INDEX idx_otp_requests_status ON otp_requests (status);
+CREATE INDEX idx_otp_requests_expires ON otp_requests (expires_at);
+
+-- Rate limiting table
+CREATE TABLE rate_limit_entries (
+    id SERIAL PRIMARY KEY,
+    key VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for rate limiting
+CREATE INDEX idx_rate_limit_entries_key ON rate_limit_entries (key);
+CREATE INDEX idx_rate_limit_entries_created ON rate_limit_entries (created_at);
+
+-- Request logs table for observability
+CREATE TABLE request_logs (
+    id SERIAL PRIMARY KEY,
+    method VARCHAR(10) NOT NULL,
+    url VARCHAR(500) NOT NULL,
+    status INTEGER NOT NULL,
+    duration INTEGER,
+    error_type VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for request logs
+CREATE INDEX idx_request_logs_created ON request_logs (created_at);
+CREATE INDEX idx_request_logs_status ON request_logs (status);
+CREATE INDEX idx_request_logs_error ON request_logs (error_type);
+
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

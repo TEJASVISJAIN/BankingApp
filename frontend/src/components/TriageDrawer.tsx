@@ -20,6 +20,13 @@ import {
   Badge,
   Tooltip,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Snackbar,
+  CircularProgress,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -34,6 +41,10 @@ import {
   CreditCard,
   Schedule,
   DeviceHub,
+  Block,
+  Gavel,
+  ContactPhone,
+  VpnKey,
 } from '@mui/icons-material';
 import { apiService } from '../services/apiService';
 
@@ -88,6 +99,26 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [streamConnected, setStreamConnected] = useState(false);
   
+  // Action states
+  const [actionDialog, setActionDialog] = useState<{
+    open: boolean;
+    type: 'freeze' | 'dispute' | 'contact' | null;
+    title: string;
+    description: string;
+  }>({ open: false, type: null, title: '', description: '' });
+  const [otpDialog, setOtpDialog] = useState<{
+    open: boolean;
+    action: string;
+    otp: string;
+    loading: boolean;
+  }>({ open: false, action: '', otp: '', loading: false });
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'warning' | 'info';
+  }>({ open: false, message: '', severity: 'info' });
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  
   const eventSourceRef = useRef<EventSource | null>(null);
 
   const getRiskColor = (level: string) => {
@@ -137,7 +168,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
       // Connect to SSE stream
       connectToStream(response.sessionId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start triage');
+      setError((err as Error)?.message || 'Failed to start triage');
       setIsRunning(false);
     }
   };
@@ -239,7 +270,130 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
     setIsRunning(false);
     setError(null);
     setStreamConnected(false);
+    setActionDialog({ open: false, type: null, title: '', description: '' });
+    setOtpDialog({ open: false, action: '', otp: '', loading: false });
     onClose();
+  };
+
+  const handleAction = (type: 'freeze' | 'dispute' | 'contact') => {
+    const actions = {
+      freeze: {
+        title: 'Freeze Card',
+        description: 'This will immediately freeze the card to prevent further transactions. This action may require OTP verification.',
+      },
+      dispute: {
+        title: 'Open Dispute',
+        description: 'This will create a dispute case for the transaction. Manual verification may be required for high amounts.',
+      },
+      contact: {
+        title: 'Contact Customer',
+        description: 'This will initiate contact with the customer to verify the transaction.',
+      },
+    };
+
+    setActionDialog({
+      open: true,
+      type,
+      title: actions[type].title,
+      description: actions[type].description,
+    });
+  };
+
+  const handleActionConfirm = async () => {
+    if (!actionDialog.type) return;
+
+    setActionLoading(actionDialog.type);
+    
+    try {
+      let response;
+      
+      switch (actionDialog.type) {
+        case 'freeze':
+          response = await apiService.freezeCard(
+            'card_001', // This should come from the transaction data
+            undefined,
+            customerId
+          );
+          break;
+        case 'dispute':
+          response = await apiService.openDispute(
+            transactionId,
+            '10.4', // Reason code
+            true,
+            customerId
+          );
+          break;
+        case 'contact':
+          response = await apiService.contactCustomer({
+            customerId,
+            method: 'phone',
+            reason: 'Transaction verification',
+            priority: 'high',
+          });
+          break;
+      }
+
+      if (response.status === 'PENDING_OTP') {
+        setOtpDialog({
+          open: true,
+          action: actionDialog.type,
+          otp: '',
+          loading: false,
+        });
+        setActionDialog({ open: false, type: null, title: '', description: '' });
+        return;
+      }
+
+      setSnackbar({
+        open: true,
+        message: `${actionDialog.title} completed successfully`,
+        severity: 'success',
+      });
+      setActionDialog({ open: false, type: null, title: '', description: '' });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: `Failed to ${actionDialog.title.toLowerCase()}`,
+        severity: 'error',
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleOtpSubmit = async () => {
+    setOtpDialog(prev => ({ ...prev, loading: true }));
+    
+    try {
+      const response = await apiService.validateOtp({
+        customerId,
+        action: otpDialog.action,
+        otp: otpDialog.otp,
+      });
+
+      if (response.isValid) {
+        setSnackbar({
+          open: true,
+          message: 'OTP validated successfully',
+          severity: 'success',
+        });
+        setOtpDialog({ open: false, action: '', otp: '', loading: false });
+      } else {
+        setSnackbar({
+          open: true,
+          message: response.reason || 'Invalid OTP',
+          severity: 'error',
+        });
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: 'OTP validation failed',
+        severity: 'error',
+      });
+    } finally {
+      setOtpDialog(prev => ({ ...prev, loading: false }));
+    }
   };
 
   return (
@@ -425,26 +579,100 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
             <Button
               variant="contained"
               color="error"
-              disabled={assessment.recommendation !== 'block'}
+              startIcon={<Block />}
+              disabled={assessment.recommendation !== 'block' || actionLoading === 'freeze'}
+              onClick={() => handleAction('freeze')}
             >
-              Freeze Card
+              {actionLoading === 'freeze' ? <CircularProgress size={20} /> : 'Freeze Card'}
             </Button>
             <Button
               variant="contained"
               color="warning"
-              disabled={assessment.riskLevel === 'low'}
+              startIcon={<Gavel />}
+              disabled={assessment.riskLevel === 'low' || actionLoading === 'dispute'}
+              onClick={() => handleAction('dispute')}
             >
-              Open Dispute
+              {actionLoading === 'dispute' ? <CircularProgress size={20} /> : 'Open Dispute'}
             </Button>
             <Button
               variant="outlined"
               color="info"
+              startIcon={<ContactPhone />}
+              disabled={actionLoading === 'contact'}
+              onClick={() => handleAction('contact')}
             >
-              Contact Customer
+              {actionLoading === 'contact' ? <CircularProgress size={20} /> : 'Contact Customer'}
             </Button>
           </Box>
         )}
       </Box>
+
+      {/* Action Confirmation Dialog */}
+      <Dialog open={actionDialog.open} onClose={() => setActionDialog({ open: false, type: null, title: '', description: '' })}>
+        <DialogTitle>{actionDialog.title}</DialogTitle>
+        <DialogContent>
+          <Typography>{actionDialog.description}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setActionDialog({ open: false, type: null, title: '', description: '' })}>
+            Cancel
+          </Button>
+          <Button onClick={handleActionConfirm} variant="contained" color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* OTP Dialog */}
+      <Dialog open={otpDialog.open} onClose={() => setOtpDialog({ open: false, action: '', otp: '', loading: false })}>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <VpnKey />
+            OTP Verification Required
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mb: 2 }}>
+            Please enter the OTP sent to your registered mobile number to complete this action.
+          </Typography>
+          <TextField
+            fullWidth
+            label="OTP"
+            value={otpDialog.otp}
+            onChange={(e) => setOtpDialog(prev => ({ ...prev, otp: e.target.value }))}
+            placeholder="Enter 6-digit OTP"
+            inputProps={{ maxLength: 6 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOtpDialog({ open: false, action: '', otp: '', loading: false })}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleOtpSubmit} 
+            variant="contained" 
+            color="primary"
+            disabled={otpDialog.loading || otpDialog.otp.length !== 6}
+          >
+            {otpDialog.loading ? <CircularProgress size={20} /> : 'Verify OTP'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ open: false, message: '', severity: 'info' })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ open: false, message: '', severity: 'info' })} 
+          severity={snackbar.severity}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Drawer>
   );
 };
