@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "seed": "ts-node src/seed.ts",
+    "seed-small": "ts-node src/seed-small.ts",
     "eval": "ts-node src/eval.ts",
+    "test-api": "ts-node src/test-api.ts",
     "generate-data": "ts-node src/generate-data.ts"
   },
   "dependencies": {
     "pg": "^8.11.3",
     "redis": "^4.6.10",
-    "faker": "^6.6.6",
+    "@faker-js/faker": "^8.4.1",
     "uuid": "^9.0.1",
     "axios": "^1.6.2",
     "dotenv": "^16.3.1"
