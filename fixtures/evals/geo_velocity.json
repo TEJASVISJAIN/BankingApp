@@ -1,0 +1,23 @@
+{
+  "id": "eval_geo_velocity",
+  "name": "Geo-Velocity Alert",
+  "description": "Impossible travel detected - Delhi to New York in 30 minutes",
+  "input": {
+    "customerId": "cust_003", 
+    "alertType": "geo_velocity",
+    "description": "Transaction in Delhi at 10:10, then New York at 10:40",
+    "urgency": "high"
+  },
+  "expectedResult": {
+    "action": "freeze_card",
+    "requiresOtp": false,
+    "riskLevel": "high", 
+    "reason": "Impossible travel detected - potential fraud"
+  },
+  "testSteps": [
+    "Analyze transaction locations and timestamps",
+    "Calculate travel time between locations",
+    "Check for impossible travel patterns",
+    "Recommend card freeze due to high risk"
+  ]
+}

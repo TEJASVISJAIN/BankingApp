@@ -1,0 +1,23 @@
+{
+  "id": "eval_unauthorized_charge",
+  "name": "Unauthorized Charge Scenario", 
+  "description": "Customer reports unauthorized charge, should open dispute",
+  "input": {
+    "customerId": "cust_002",
+    "suspectTxnId": "txn_01003",
+    "description": "Customer reports unauthorized charge of ₹450 at McDonald's",
+    "urgency": "medium"
+  },
+  "expectedResult": {
+    "action": "open_dispute",
+    "reasonCode": "10.4",
+    "riskLevel": "medium",
+    "reason": "Unauthorized transaction reported by customer"
+  },
+  "testSteps": [
+    "Verify customer identity",
+    "Review transaction details",
+    "Check for similar patterns",
+    "Open dispute with reason code 10.4"
+  ]
+}

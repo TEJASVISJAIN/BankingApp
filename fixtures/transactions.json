@@ -1,0 +1,87 @@
+[
+  {
+    "id": "txn_01001",
+    "customerId": "cust_001",
+    "cardId": "card_001", 
+    "mcc": "6011",
+    "merchant": "ATM Withdrawal",
+    "amount": -10000,
+    "currency": "INR",
+    "ts": "2025-06-13T13:02:11Z",
+    "deviceId": "dev_01",
+    "geo": {
+      "lat": 28.61,
+      "lon": 77.21,
+      "country": "IN",
+      "city": "Delhi"
+    }
+  },
+  {
+    "id": "txn_01002",
+    "customerId": "cust_001",
+    "cardId": "card_001",
+    "mcc": "5411", 
+    "merchant": "Big Bazaar",
+    "amount": -2500,
+    "currency": "INR",
+    "ts": "2025-06-13T14:30:00Z",
+    "deviceId": "dev_01",
+    "geo": {
+      "lat": 28.61,
+      "lon": 77.21,
+      "country": "IN",
+      "city": "Delhi"
+    }
+  },
+  {
+    "id": "txn_01003",
+    "customerId": "cust_002",
+    "cardId": "card_003",
+    "mcc": "5812",
+    "merchant": "McDonald's",
+    "amount": -450,
+    "currency": "INR", 
+    "ts": "2025-06-13T12:15:00Z",
+    "deviceId": "dev_02",
+    "geo": {
+      "lat": 19.07,
+      "lon": 72.87,
+      "country": "IN",
+      "city": "Mumbai"
+    }
+  },
+  {
+    "id": "txn_01004",
+    "customerId": "cust_003",
+    "cardId": "card_004",
+    "mcc": "5541",
+    "merchant": "Indian Oil",
+    "amount": -3000,
+    "currency": "INR",
+    "ts": "2025-06-13T16:45:00Z", 
+    "deviceId": "dev_03",
+    "geo": {
+      "lat": 12.97,
+      "lon": 77.59,
+      "country": "IN",
+      "city": "Bangalore"
+    }
+  },
+  {
+    "id": "txn_01005",
+    "customerId": "cust_004",
+    "cardId": "card_005",
+    "mcc": "5999",
+    "merchant": "Amazon",
+    "amount": -5000,
+    "currency": "INR",
+    "ts": "2025-06-13T18:20:00Z",
+    "deviceId": "dev_04", 
+    "geo": {
+      "lat": 22.57,
+      "lon": 88.36,
+      "country": "IN",
+      "city": "Kolkata"
+    }
+  }
+]

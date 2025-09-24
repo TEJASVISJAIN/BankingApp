@@ -1,0 +1,23 @@
+{
+  "id": "eval_card_lost",
+  "name": "Card Lost Scenario",
+  "description": "Customer reports lost card, agent should freeze card with OTP verification",
+  "input": {
+    "customerId": "cust_001",
+    "alertType": "card_lost",
+    "description": "Customer called to report lost card",
+    "urgency": "high"
+  },
+  "expectedResult": {
+    "action": "freeze_card",
+    "requiresOtp": true,
+    "riskLevel": "high",
+    "reason": "Card reported as lost by customer"
+  },
+  "testSteps": [
+    "Verify customer identity",
+    "Check recent transactions for unauthorized activity", 
+    "Request OTP for verification",
+    "Freeze card after OTP confirmation"
+  ]
+}
