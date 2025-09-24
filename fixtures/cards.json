@@ -1,0 +1,37 @@
+[
+  {
+    "id": "card_001",
+    "customerId": "cust_001",
+    "last4": "1234",
+    "status": "active",
+    "network": "VISA"
+  },
+  {
+    "id": "card_002", 
+    "customerId": "cust_001",
+    "last4": "5678",
+    "status": "active",
+    "network": "MASTERCARD"
+  },
+  {
+    "id": "card_003",
+    "customerId": "cust_002", 
+    "last4": "9012",
+    "status": "blocked",
+    "network": "VISA"
+  },
+  {
+    "id": "card_004",
+    "customerId": "cust_003",
+    "last4": "3456", 
+    "status": "active",
+    "network": "RUPAY"
+  },
+  {
+    "id": "card_005",
+    "customerId": "cust_004",
+    "last4": "7890",
+    "status": "expired", 
+    "network": "VISA"
+  }
+]

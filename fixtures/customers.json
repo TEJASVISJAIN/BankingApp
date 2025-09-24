@@ -1,0 +1,32 @@
+[
+  {
+    "id": "cust_001",
+    "name": "Rajesh Kumar",
+    "email_masked": "raj***@gmail.com",
+    "risk_flags": []
+  },
+  {
+    "id": "cust_002", 
+    "name": "Priya Sharma",
+    "email_masked": "pri***@yahoo.com",
+    "risk_flags": ["high_risk_customer"]
+  },
+  {
+    "id": "cust_003",
+    "name": "Amit Patel",
+    "email_masked": "ami***@outlook.com", 
+    "risk_flags": []
+  },
+  {
+    "id": "cust_004",
+    "name": "Sunita Singh",
+    "email_masked": "sun***@hotmail.com",
+    "risk_flags": ["chargeback_history"]
+  },
+  {
+    "id": "cust_005",
+    "name": "Vikram Reddy",
+    "email_masked": "vik***@gmail.com",
+    "risk_flags": []
+  }
+]

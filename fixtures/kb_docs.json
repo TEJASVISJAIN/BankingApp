@@ -1,0 +1,46 @@
+[
+  {
+    "id": "kb_001",
+    "title": "Card Freeze Process",
+    "anchor": "card_freeze",
+    "chunks": [
+      "To freeze a card, verify customer identity first",
+      "Check for recent transactions before freezing",
+      "Always require OTP verification for security",
+      "Confirm freeze request with customer"
+    ]
+  },
+  {
+    "id": "kb_002", 
+    "title": "Dispute Resolution",
+    "anchor": "dispute_process",
+    "chunks": [
+      "For unauthorized transactions, gather transaction details",
+      "Verify customer identity before opening dispute",
+      "Use reason code 10.4 for unauthorized transactions",
+      "Use reason code 10.5 for duplicate transactions"
+    ]
+  },
+  {
+    "id": "kb_003",
+    "title": "Travel Notice",
+    "anchor": "travel_notice", 
+    "chunks": [
+      "Customers can set travel notices for international transactions",
+      "Travel notices help prevent false fraud alerts",
+      "Valid for up to 90 days",
+      "Can be set via mobile app or customer service"
+    ]
+  },
+  {
+    "id": "kb_004",
+    "title": "Risk Assessment",
+    "anchor": "risk_assessment",
+    "chunks": [
+      "High risk factors: velocity, device change, MCC anomaly",
+      "Medium risk: unusual location, large amount",
+      "Low risk: regular patterns, known merchants",
+      "Always consider customer history"
+    ]
+  }
+]
