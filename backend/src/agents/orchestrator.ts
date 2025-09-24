@@ -1,5 +1,9 @@
 import { EventEmitter } from 'events';
 import { fraudAgent, FraudAssessment, TransactionContext } from './fraudAgent';
+import { kbAgent } from './kbAgent';
+import { circuitBreakerService } from '../services/circuitBreaker';
+import { rateLimiterService } from '../services/rateLimiter';
+import { observabilityService } from '../services/observability';
 import { secureLogger } from '../utils/logger';
 import { query } from '../utils/database';
 import { traceService } from '../services/traceService';
@@ -162,9 +166,22 @@ class AgentOrchestrator extends EventEmitter {
 
     const context = contextStep.output as TransactionContext;
 
-    // Step 2: Run fraud assessment
+    // Step 2: KB lookup for relevant information
+    const kbStep = await this.executeStep(sessionId, 'kb_lookup', 'Search knowledge base', async () => {
+      return await circuitBreakerService.executeWithCircuitBreaker(
+        'kb_search',
+        () => kbAgent.searchKB('fraud detection transaction analysis', { context }),
+        () => kbAgent.searchKB('fraud detection transaction analysis', { context })
+      );
+    });
+
+    // Step 3: Run fraud assessment
     const fraudStep = await this.executeStep(sessionId, 'fraud_assessment', 'Run fraud assessment', async () => {
-      return await fraudAgent.assessTransaction(context);
+      return await circuitBreakerService.executeWithCircuitBreaker(
+        'fraud_analysis',
+        () => fraudAgent.assessTransaction(context),
+        () => this.executeFallbackAssessment(context)
+      );
     });
 
     if (fraudStep.status === 'failed') {
@@ -192,6 +209,14 @@ class AgentOrchestrator extends EventEmitter {
     if (recommendationStep.status === 'completed') {
       assessment.recommendation = recommendationStep.output.recommendation;
       assessment.reasoning.push(...recommendationStep.output.reasoning);
+    }
+
+    // Add KB citations if available
+    if (kbStep.status === 'completed' && kbStep.output?.results?.length > 0) {
+      assessment.reasoning.push('Knowledge Base References:');
+      kbStep.output.results.forEach((result: any) => {
+        assessment.reasoning.push(`- ${result.document.title}: ${result.citations.join(', ')}`);
+      });
     }
 
     return assessment;
