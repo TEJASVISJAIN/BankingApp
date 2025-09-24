@@ -10,6 +10,7 @@
     "optimize": "ts-node src/optimize.ts",
     "acceptance": "ts-node src/acceptance-tests.ts",
     "perf-verify": "ts-node src/performance-verify.ts",
+    "final-eval": "ts-node src/final-eval.ts",
     "test-api": "ts-node src/test-api.ts",
     "generate-data": "ts-node src/generate-data.ts"
   },
