@@ -346,6 +346,78 @@ class ApiService {
       throw error
     }
   }
+
+  // Triage APIs
+  async startTriage(request: { customerId: string; transactionId: string }): Promise<any> {
+    try {
+      const response = await api.post('/api/triage', request)
+      return response.data
+    } catch (error) {
+      console.error('Failed to start triage:', error)
+      throw error
+    }
+  }
+
+  async getTriageSession(sessionId: string): Promise<any> {
+    try {
+      const response = await api.get(`/api/triage/session/${sessionId}`)
+      return response.data
+    } catch (error) {
+      console.error('Failed to get triage session:', error)
+      throw error
+    }
+  }
+
+  async getTriageSessions(): Promise<any> {
+    try {
+      const response = await api.get('/api/triage/sessions')
+      return response.data
+    } catch (error) {
+      console.error('Failed to get triage sessions:', error)
+      throw error
+    }
+  }
+
+  async cancelTriageSession(sessionId: string): Promise<any> {
+    try {
+      const response = await api.post(`/api/triage/cancel/${sessionId}`)
+      return response.data
+    } catch (error) {
+      console.error('Failed to cancel triage session:', error)
+      throw error
+    }
+  }
+
+  // Trace APIs
+  async getTraceMetrics(days: number = 7): Promise<any> {
+    try {
+      const response = await api.get(`/api/traces/metrics?days=${days}`)
+      return response.data
+    } catch (error) {
+      console.error('Failed to get trace metrics:', error)
+      throw error
+    }
+  }
+
+  async getRecentTraces(limit: number = 50): Promise<any> {
+    try {
+      const response = await api.get(`/api/traces/recent?limit=${limit}`)
+      return response.data
+    } catch (error) {
+      console.error('Failed to get recent traces:', error)
+      throw error
+    }
+  }
+
+  async getTrace(sessionId: string): Promise<any> {
+    try {
+      const response = await api.get(`/api/traces/${sessionId}`)
+      return response.data
+    } catch (error) {
+      console.error('Failed to get trace:', error)
+      throw error
+    }
+  }
 }
 
 export const apiService = new ApiService()

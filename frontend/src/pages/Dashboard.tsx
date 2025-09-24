@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Grid,
   Paper,
@@ -25,6 +25,7 @@ import {
 } from '@mui/icons-material'
 import { useQuery } from '@tanstack/react-query'
 import { apiService } from '../services/apiService'
+import TriageDrawer from '../components/TriageDrawer'
 
 // Mock data for demonstration
 const mockKpis = {
@@ -36,41 +37,44 @@ const mockKpis = {
 
 const mockFraudTriage = [
   {
-    id: 'alert_001',
+    id: 'txn_08502',
     customerId: 'cust_001',
     customerName: 'Rajesh Kumar',
     riskScore: 85,
     status: 'pending',
-    amount: 25000,
-    merchant: 'Unknown Merchant',
-    timestamp: '2025-01-15T10:30:00Z',
+    amount: 13526,
+    merchant: "Wendy's",
+    timestamp: '2025-06-26T18:25:35.817Z',
     reasons: ['Velocity anomaly', 'New merchant', 'High amount'],
   },
   {
-    id: 'alert_002',
-    customerId: 'cust_002',
-    customerName: 'Priya Sharma',
+    id: 'txn_08189',
+    customerId: 'cust_001',
+    customerName: 'Rajesh Kumar',
     riskScore: 92,
     status: 'in_progress',
-    amount: 50000,
-    merchant: 'Suspicious Store',
-    timestamp: '2025-01-15T09:15:00Z',
+    amount: 46968,
+    merchant: 'Uber',
+    timestamp: '2025-06-24T02:07:14.906Z',
     reasons: ['Geo-velocity', 'Device change', 'Past chargebacks'],
   },
   {
-    id: 'alert_003',
-    customerId: 'cust_003',
-    customerName: 'Amit Patel',
+    id: 'txn_02692',
+    customerId: 'cust_001',
+    customerName: 'Rajesh Kumar',
     riskScore: 45,
     status: 'resolved',
-    amount: 5000,
-    merchant: 'Regular Store',
-    timestamp: '2025-01-15T08:45:00Z',
+    amount: 89176,
+    merchant: 'Nykaa',
+    timestamp: '2025-06-23T01:58:45.281Z',
     reasons: ['Amount spike'],
   },
 ]
 
 export function Dashboard() {
+  const [triageDrawerOpen, setTriageDrawerOpen] = useState(false)
+  const [selectedAlert, setSelectedAlert] = useState<any>(null)
+
   const { data: kpis, isLoading: kpisLoading } = useQuery({
     queryKey: ['dashboard', 'kpis'],
     queryFn: () => apiService.getDashboardKpis(),
@@ -85,6 +89,16 @@ export function Dashboard() {
 
   const displayKpis = kpis || mockKpis
   const displayTriage = fraudTriage || mockFraudTriage
+
+  const handleViewTriage = (alert: any) => {
+    setSelectedAlert(alert)
+    setTriageDrawerOpen(true)
+  }
+
+  const handleCloseTriage = () => {
+    setTriageDrawerOpen(false)
+    setSelectedAlert(null)
+  }
 
   const getRiskColor = (score: number) => {
     if (score >= 80) return 'error'
@@ -237,8 +251,11 @@ export function Dashboard() {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Tooltip title="View Details">
-                      <IconButton size="small">
+                    <Tooltip title="View Triage Analysis">
+                      <IconButton 
+                        size="small"
+                        onClick={() => handleViewTriage(alert)}
+                      >
                         <Visibility />
                       </IconButton>
                     </Tooltip>
@@ -249,6 +266,16 @@ export function Dashboard() {
           </Table>
         </TableContainer>
       </Paper>
+
+      {/* Triage Drawer */}
+      {selectedAlert && (
+        <TriageDrawer
+          open={triageDrawerOpen}
+          onClose={handleCloseTriage}
+          customerId={selectedAlert.customerId}
+          transactionId={selectedAlert.id}
+        />
+      )}
     </Box>
   )
 }
