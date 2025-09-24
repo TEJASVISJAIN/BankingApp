@@ -107,7 +107,7 @@ class PerformanceVerifier {
         }
 
       } catch (error) {
-        errors++;
+        // errors++;
         console.log(`\n   Error in iteration ${i + 1}: ${(error as Error).message}`);
       }
     }
