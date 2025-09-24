@@ -13,6 +13,7 @@
     "start:backend": "cd backend && npm start",
     "start:frontend": "cd frontend && npm start",
     "seed": "cd scripts && npm run seed",
+    "seed-small": "cd scripts && npm run seed-small",
     "eval": "cd scripts && npm run eval",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
