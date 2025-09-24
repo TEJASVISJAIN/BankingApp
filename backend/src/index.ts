@@ -15,6 +15,8 @@ import { insightsRoutes } from './routes/insights';
 import { customerRoutes } from './routes/customer';
 import { healthRoutes } from './routes/health';
 import { metricsRoutes } from './routes/metrics';
+import triageRoutes from './routes/triage';
+import traceRoutes from './routes/traces';
 
 const app = express();
 
@@ -69,6 +71,8 @@ app.use('/metrics', metricsRoutes);
 app.use('/api/ingest', apiKeyAuth, ingestionRoutes);
 app.use('/api/insights', apiKeyAuth, insightsRoutes);
 app.use('/api/customer', apiKeyAuth, customerRoutes);
+app.use('/api/triage', apiKeyAuth, triageRoutes);
+app.use('/api/traces', apiKeyAuth, traceRoutes);
 
 // Error handling
 app.use(errorHandler);
