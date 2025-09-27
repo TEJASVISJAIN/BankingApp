@@ -22,29 +22,17 @@ import {
 } from '@mui/material';
 import {
   Search,
-  FilterList,
   Refresh,
-  TrendingUp,
-  TrendingDown,
   Warning,
   Assessment,
-  Visibility,
   Accessibility,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
-import { apiService } from '../services/apiService';
+import apiService from '../services/apiService';
 import TriageDrawer from '../components/TriageDrawer';
 import VirtualizedTable from '../components/VirtualizedTable';
 import AccessibleDrawer from '../components/AccessibleDrawer';
 
-interface KPIData {
-  totalSpend: number;
-  highRiskAlerts: number;
-  disputesOpened: number;
-  avgTriageTime: number;
-  spendChange: number;
-  riskChange: number;
-}
 
 interface FraudTriageItem {
   id: string;
@@ -88,7 +76,7 @@ const EnhancedDashboard: React.FC = () => {
   const filteredFraudTriage = useMemo(() => {
     if (!fraudTriage) return [];
     
-    return fraudTriage.filter((item: FraudTriageItem) => {
+    return fraudTriage.filter((item: any) => {
       const matchesSearch = item.merchant.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            item.customerId.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesRisk = riskFilter === 'all' || item.riskLevel === riskFilter;
@@ -189,7 +177,7 @@ const EnhancedDashboard: React.FC = () => {
       key: 'actions',
       label: 'Actions',
       width: 100,
-      render: (value: any, row: FraudTriageItem) => (
+      render: (_value: any, row: FraudTriageItem) => (
         <Button
           variant="outlined"
           size="small"
@@ -253,13 +241,8 @@ const EnhancedDashboard: React.FC = () => {
                 ₹{(kpis?.totalSpend || 0).toLocaleString()}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                {kpis?.spendChange && kpis.spendChange > 0 ? (
-                  <TrendingUp color="success" sx={{ mr: 0.5 }} />
-                ) : (
-                  <TrendingDown color="error" sx={{ mr: 0.5 }} />
-                )}
                 <Typography variant="body2" color="text.secondary">
-                  {kpis?.spendChange || 0}% from last month
+                  Total spend this month
                 </Typography>
               </Box>
             </CardContent>
@@ -277,13 +260,8 @@ const EnhancedDashboard: React.FC = () => {
                 {kpis?.highRiskAlerts || 0}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                {kpis?.riskChange && kpis.riskChange > 0 ? (
-                  <TrendingUp color="error" sx={{ mr: 0.5 }} />
-                ) : (
-                  <TrendingDown color="success" sx={{ mr: 0.5 }} />
-                )}
                 <Typography variant="body2" color="text.secondary">
-                  {kpis?.riskChange || 0}% from last month
+                  High-risk alerts detected
                 </Typography>
               </Box>
             </CardContent>

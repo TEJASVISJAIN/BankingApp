@@ -14,7 +14,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  LinearProgress,
 } from '@mui/material'
 import {
   PlayArrow,
@@ -101,14 +100,6 @@ export function EvalsPage() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'passed': return <CheckCircle />
-      case 'failed': return <Error />
-      case 'running': return <LinearProgress />
-      default: return null
-    }
-  }
 
   return (
     <Box>
@@ -226,7 +217,6 @@ export function EvalsPage() {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      icon={getStatusIcon(testCase.status)}
                       label={testCase.status}
                       color={getStatusColor(testCase.status)}
                       size="small"

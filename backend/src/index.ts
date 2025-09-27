@@ -15,6 +15,7 @@ import { rateLimiterService } from './services/rateLimiter';
 import { ingestionRoutes } from './routes/ingestion';
 import { insightsRoutes } from './routes/insights';
 import { customerRoutes } from './routes/customer';
+import { dashboardRoutes } from './routes/dashboard';
 import { healthRoutes } from './routes/health';
 import { metricsRoutes } from './routes/metrics';
 import triageRoutes from './routes/triage';
@@ -101,7 +102,9 @@ app.use('/metrics', metricsRoutes);
 app.use('/api/ingest', apiKeyAuth, ingestionRoutes);
 app.use('/api/insights', apiKeyAuth, insightsRoutes);
 app.use('/api/customer', apiKeyAuth, customerRoutes);
-app.use('/api/triage', apiKeyAuth, triageRoutes);
+app.use('/api/dashboard', apiKeyAuth, dashboardRoutes);
+// Triage routes - SSE endpoint needs special handling
+app.use('/api/triage', triageRoutes);
 app.use('/api/traces', apiKeyAuth, traceRoutes);
 app.use('/api/actions', apiKeyAuth, actionRoutes);
 app.use('/api/kb', apiKeyAuth, kbRoutes);

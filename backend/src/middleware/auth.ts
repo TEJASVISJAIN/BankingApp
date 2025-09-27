@@ -17,7 +17,7 @@ declare global {
 }
 
 export function apiKeyAuth(req: Request, res: Response, next: NextFunction) {
-  const apiKey = req.headers['x-api-key'] as string;
+  const apiKey = req.headers['x-api-key'] as string || req.query['X-API-Key'] as string;
   
   if (!apiKey) {
     secureLogger.warn('API key missing', {

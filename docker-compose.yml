@@ -37,8 +37,16 @@ services:
     ports:
       - "3001:3001"
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       DATABASE_URL: postgresql://aegis_user:aegis_password@postgres:5432/aegis_support
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: aegis_support
+      DB_USER: aegis_user
+      DB_PASSWORD: aegis_password
+      DB_SSL: false
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       REDIS_URL: redis://redis:6379
       API_KEY_SECRET: aegis_secret_key_development
     depends_on:
@@ -46,10 +54,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: npm run dev
 
   frontend:
     build:
@@ -58,13 +62,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_API_URL: http://localhost:3001
+      VITE_API_URL: http://localhost:3001
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev
 
 volumes:
   postgres_data:

@@ -1,4 +1,3 @@
-import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Drawer,
@@ -13,7 +12,6 @@ import {
 } from '@mui/material'
 import {
   Dashboard as DashboardIcon,
-  Person as PersonIcon,
   Warning as WarningIcon,
   Assessment as AssessmentIcon,
 } from '@mui/icons-material'

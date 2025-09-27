@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Grid,
   Paper,
@@ -15,6 +15,7 @@ import {
   TableRow,
   IconButton,
   Tooltip,
+  Skeleton,
 } from '@mui/material'
 import {
   TrendingUp,
@@ -24,52 +25,11 @@ import {
   Visibility,
 } from '@mui/icons-material'
 import { useQuery } from '@tanstack/react-query'
-import { apiService } from '../services/apiService'
+import apiService from '../services/apiService'
 import TriageDrawer from '../components/TriageDrawer'
+import SkeletonLoader from '../components/SkeletonLoader'
 
-// Mock data for demonstration
-const mockKpis = {
-  totalSpend: 1250000,
-  highRiskAlerts: 23,
-  disputesOpened: 8,
-  avgTriageTime: 2.3,
-}
-
-const mockFraudTriage = [
-  {
-    id: 'txn_08502',
-    customerId: 'cust_001',
-    customerName: 'Rajesh Kumar',
-    riskScore: 85,
-    status: 'pending',
-    amount: 13526,
-    merchant: "Wendy's",
-    timestamp: '2025-06-26T18:25:35.817Z',
-    reasons: ['Velocity anomaly', 'New merchant', 'High amount'],
-  },
-  {
-    id: 'txn_08189',
-    customerId: 'cust_001',
-    customerName: 'Rajesh Kumar',
-    riskScore: 92,
-    status: 'in_progress',
-    amount: 46968,
-    merchant: 'Uber',
-    timestamp: '2025-06-24T02:07:14.906Z',
-    reasons: ['Geo-velocity', 'Device change', 'Past chargebacks'],
-  },
-  {
-    id: 'txn_02692',
-    customerId: 'cust_001',
-    customerName: 'Rajesh Kumar',
-    riskScore: 45,
-    status: 'resolved',
-    amount: 89176,
-    merchant: 'Nykaa',
-    timestamp: '2025-06-23T01:58:45.281Z',
-    reasons: ['Amount spike'],
-  },
-]
+// Removed mock data - using real API data only
 
 export function Dashboard() {
   const [triageDrawerOpen, setTriageDrawerOpen] = useState(false)
@@ -81,14 +41,14 @@ export function Dashboard() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  const { data: fraudTriage, isLoading: triageLoading } = useQuery({
+  const { data: fraudTriage, isLoading: fraudTriageLoading, error: fraudTriageError } = useQuery({
     queryKey: ['dashboard', 'fraud-triage'],
     queryFn: () => apiService.getFraudTriage(),
     staleTime: 30 * 1000, // 30 seconds
   })
 
-  const displayKpis = kpis || mockKpis
-  const displayTriage = fraudTriage || mockFraudTriage
+  const displayKpis = kpis || { totalSpend: 0, highRiskAlerts: 0, disputesOpened: 0, avgTriageTime: 0, totalTransactions: 0, fraudRate: 0 }
+  const displayTriage = fraudTriage || []
 
   const handleViewTriage = (alert: any) => {
     setSelectedAlert(alert)
@@ -130,9 +90,13 @@ export function Dashboard() {
                 <TrendingUp color="primary" sx={{ mr: 1 }} />
                 <Typography variant="h6">Total Spend</Typography>
               </Box>
-              <Typography variant="h4" color="primary">
-                ₹{(displayKpis.totalSpend / 100).toLocaleString()}
-              </Typography>
+              {kpisLoading ? (
+                <Skeleton width="60%" height={40} />
+              ) : (
+                <Typography variant="h4" color="primary">
+                  ₹{(displayKpis.totalSpend / 100).toLocaleString()}
+                </Typography>
+              )}
               <Typography variant="body2" color="text.secondary">
                 Last 30 days
               </Typography>
@@ -147,9 +111,13 @@ export function Dashboard() {
                 <Warning color="error" sx={{ mr: 1 }} />
                 <Typography variant="h6">High Risk Alerts</Typography>
               </Box>
-              <Typography variant="h4" color="error">
-                {displayKpis.highRiskAlerts}
-              </Typography>
+              {kpisLoading ? (
+                <Skeleton width="40%" height={40} />
+              ) : (
+                <Typography variant="h4" color="error">
+                  {displayKpis.highRiskAlerts}
+                </Typography>
+              )}
               <Typography variant="body2" color="text.secondary">
                 Requires attention
               </Typography>
@@ -164,9 +132,13 @@ export function Dashboard() {
                 <Assessment color="warning" sx={{ mr: 1 }} />
                 <Typography variant="h6">Disputes Opened</Typography>
               </Box>
-              <Typography variant="h4" color="warning.main">
-                {displayKpis.disputesOpened}
-              </Typography>
+              {kpisLoading ? (
+                <Skeleton width="30%" height={40} />
+              ) : (
+                <Typography variant="h4" color="warning.main">
+                  {displayKpis.disputesOpened}
+                </Typography>
+              )}
               <Typography variant="body2" color="text.secondary">
                 This week
               </Typography>
@@ -181,9 +153,13 @@ export function Dashboard() {
                 <TrendingDown color="success" sx={{ mr: 1 }} />
                 <Typography variant="h6">Avg Triage Time</Typography>
               </Box>
-              <Typography variant="h4" color="success.main">
-                {displayKpis.avgTriageTime}s
-              </Typography>
+              {kpisLoading ? (
+                <Skeleton width="25%" height={40} />
+              ) : (
+                <Typography variant="h4" color="success.main">
+                  {displayKpis.avgTriageTime}s
+                </Typography>
+              )}
               <Typography variant="body2" color="text.secondary">
                 Target: &lt;5s
               </Typography>
@@ -197,74 +173,91 @@ export function Dashboard() {
         <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="h6">Fraud Triage Queue</Typography>
         </Box>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Customer</TableCell>
-                <TableCell>Risk Score</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell>Merchant</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Timestamp</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {displayTriage.map((alert) => (
-                <TableRow key={alert.id} hover>
-                  <TableCell>
-                    <Box>
-                      <Typography variant="body2" fontWeight="medium">
-                        {alert.customerName}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {alert.customerId}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={alert.riskScore}
-                      color={getRiskColor(alert.riskScore)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight="medium">
-                      ₹{(alert.amount / 100).toLocaleString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{alert.merchant}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={alert.status}
-                      color={getStatusColor(alert.status)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {new Date(alert.timestamp).toLocaleString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Tooltip title="View Triage Analysis">
-                      <IconButton 
-                        size="small"
-                        onClick={() => handleViewTriage(alert)}
-                      >
-                        <Visibility />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+        
+        {fraudTriageLoading ? (
+          <SkeletonLoader rows={8} variant="table" />
+        ) : fraudTriageError ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography color="error">
+              Failed to load fraud triage data. Please try again.
+            </Typography>
+          </Box>
+        ) : displayTriage.length === 0 ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography color="text.secondary">
+              No fraud alerts at the moment. All transactions are within normal parameters.
+            </Typography>
+          </Box>
+        ) : (
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Customer</TableCell>
+                  <TableCell>Risk Score</TableCell>
+                  <TableCell>Amount</TableCell>
+                  <TableCell>Merchant</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Timestamp</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {displayTriage.map((alert) => (
+                  <TableRow key={alert.id} hover>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="body2" fontWeight="medium">
+                          Customer {alert.customerId}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {alert.customerId}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={alert.riskScore}
+                        color={getRiskColor(alert.riskScore)}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="medium">
+                        ₹{(alert.amount / 100).toLocaleString()}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{alert.merchant}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={alert.status}
+                        color={getStatusColor(alert.status)}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {new Date(alert.timestamp).toLocaleString()}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="View Triage Analysis">
+                        <IconButton 
+                          size="small"
+                          onClick={() => handleViewTriage(alert)}
+                        >
+                          <Visibility />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </Paper>
 
       {/* Triage Drawer */}

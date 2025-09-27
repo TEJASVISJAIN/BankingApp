@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Drawer,
   Box,
@@ -13,12 +13,9 @@ import {
   ListItemText,
   Button,
   Alert,
-  Divider,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Badge,
-  Tooltip,
   IconButton,
   Dialog,
   DialogTitle,
@@ -31,7 +28,6 @@ import {
 import {
   CheckCircle,
   Error,
-  Warning,
   Info,
   Close,
   ExpandMore,
@@ -46,7 +42,7 @@ import {
   ContactPhone,
   VpnKey,
 } from '@mui/icons-material';
-import { apiService } from '../services/apiService';
+import apiService from '../services/apiService';
 
 interface RiskSignal {
   type: 'velocity' | 'amount' | 'location' | 'merchant' | 'device' | 'time';
@@ -117,6 +113,14 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
     message: string;
     severity: 'success' | 'error' | 'warning' | 'info';
   }>({ open: false, message: '', severity: 'info' });
+  
+  // 429 UX handling
+  const [rateLimited, setRateLimited] = useState(false);
+  const [retryAfter, setRetryAfter] = useState(0);
+  
+  // Accessibility
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -129,6 +133,55 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
       default: return 'default';
     }
   };
+
+  // Accessibility: Focus trap
+  const trapFocus = useCallback((e: KeyboardEvent) => {
+    if (!drawerRef.current) return;
+    
+    const focusableElements = drawerRef.current.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+    
+    if (e.key === 'Tab') {
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement?.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement?.focus();
+        }
+      }
+    }
+  }, []);
+
+  // Accessibility: ESC key handling
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
+
+  // 429 UX: Handle rate limiting
+  const handleRateLimit = useCallback((retryAfterMs: number) => {
+    setRateLimited(true);
+    setRetryAfter(Math.ceil(retryAfterMs / 1000));
+    
+    const interval = setInterval(() => {
+      setRetryAfter(prev => {
+        if (prev <= 1) {
+          setRateLimited(false);
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
 
   const getStepIcon = (status: string) => {
     switch (status) {
@@ -178,7 +231,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
       eventSourceRef.current.close();
     }
 
-    const eventSource = new EventSource(`/api/triage/stream/${sessionId}`);
+    const eventSource = new EventSource(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/triage/stream/${sessionId}?X-API-Key=dev_key_789`);
     eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
@@ -250,6 +303,8 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
 
   useEffect(() => {
     if (open && customerId && transactionId) {
+      // Store the previously focused element for accessibility
+      previousActiveElement.current = document.activeElement as HTMLElement;
       startTriage();
     }
 
@@ -259,6 +314,32 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
       }
     };
   }, [open, customerId, transactionId]);
+
+  // Accessibility: Set up focus trap and keyboard handling
+  useEffect(() => {
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('keydown', trapFocus);
+      
+      // Focus the first focusable element
+      setTimeout(() => {
+        const firstFocusable = drawerRef.current?.querySelector(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        ) as HTMLElement;
+        firstFocusable?.focus();
+      }, 100);
+      
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('keydown', trapFocus);
+        
+        // Return focus to the previously focused element
+        if (previousActiveElement.current) {
+          previousActiveElement.current.focus();
+        }
+      };
+    }
+  }, [open, handleKeyDown, trapFocus]);
 
   const handleClose = () => {
     if (eventSourceRef.current) {
@@ -276,6 +357,15 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
   };
 
   const handleAction = (type: 'freeze' | 'dispute' | 'contact') => {
+    if (rateLimited) {
+      setSnackbar({
+        open: true,
+        message: `Too many requests — try again in ${retryAfter}s`,
+        severity: 'warning'
+      });
+      return;
+    }
+    
     const actions = {
       freeze: {
         title: 'Freeze Card',
@@ -350,12 +440,22 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
         severity: 'success',
       });
       setActionDialog({ open: false, type: null, title: '', description: '' });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: `Failed to ${actionDialog.title.toLowerCase()}`,
-        severity: 'error',
-      });
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        const retryAfter = error.response.headers['retry-after'] || 2000;
+        handleRateLimit(retryAfter);
+        setSnackbar({
+          open: true,
+          message: `Too many requests — try again in ${Math.ceil(retryAfter / 1000)}s`,
+          severity: 'warning',
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: `Failed to ${actionDialog.title.toLowerCase()}`,
+          severity: 'error',
+        });
+      }
     } finally {
       setActionLoading(null);
     }
@@ -402,7 +502,8 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
       open={open}
       onClose={handleClose}
       PaperProps={{
-        sx: { width: 600, maxWidth: '90vw' }
+        sx: { width: 600, maxWidth: '90vw' },
+        ref: drawerRef
       }}
     >
       <Box sx={{ p: 3 }}>
@@ -531,7 +632,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                 Agent Execution Trace
               </Typography>
               
-              {steps.map((step, index) => (
+              {steps.map((step) => (
                 <Accordion key={step.id} defaultExpanded={step.status === 'failed'}>
                   <AccordionSummary expandIcon={<ExpandMore />}>
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
@@ -580,28 +681,31 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
               variant="contained"
               color="error"
               startIcon={<Block />}
-              disabled={assessment.recommendation !== 'block' || actionLoading === 'freeze'}
+              disabled={assessment.recommendation !== 'block' || actionLoading === 'freeze' || rateLimited}
               onClick={() => handleAction('freeze')}
             >
-              {actionLoading === 'freeze' ? <CircularProgress size={20} /> : 'Freeze Card'}
+              {actionLoading === 'freeze' ? <CircularProgress size={20} /> : 
+               rateLimited ? `Try again in ${retryAfter}s` : 'Freeze Card'}
             </Button>
             <Button
               variant="contained"
               color="warning"
               startIcon={<Gavel />}
-              disabled={assessment.riskLevel === 'low' || actionLoading === 'dispute'}
+              disabled={assessment.riskLevel === 'low' || actionLoading === 'dispute' || rateLimited}
               onClick={() => handleAction('dispute')}
             >
-              {actionLoading === 'dispute' ? <CircularProgress size={20} /> : 'Open Dispute'}
+              {actionLoading === 'dispute' ? <CircularProgress size={20} /> : 
+               rateLimited ? `Try again in ${retryAfter}s` : 'Open Dispute'}
             </Button>
             <Button
               variant="outlined"
               color="info"
               startIcon={<ContactPhone />}
-              disabled={actionLoading === 'contact'}
+              disabled={actionLoading === 'contact' || rateLimited}
               onClick={() => handleAction('contact')}
             >
-              {actionLoading === 'contact' ? <CircularProgress size={20} /> : 'Contact Customer'}
+              {actionLoading === 'contact' ? <CircularProgress size={20} /> : 
+               rateLimited ? `Try again in ${retryAfter}s` : 'Contact Customer'}
             </Button>
           </Box>
         )}

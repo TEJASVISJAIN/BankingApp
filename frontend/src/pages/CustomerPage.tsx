@@ -17,10 +17,6 @@ import {
   TableHead,
   TableRow,
   Pagination,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   TextField,
   Button,
 } from '@mui/material'
@@ -28,10 +24,9 @@ import {
   TrendingUp,
   ShoppingCart,
   Category,
-  Timeline,
 } from '@mui/icons-material'
 import { useQuery } from '@tanstack/react-query'
-import { apiService } from '../services/apiService'
+import apiService from '../services/apiService'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 interface TabPanelProps {
@@ -75,20 +70,20 @@ export function CustomerPage() {
   })
 
   // Fetch customer insights
-  const { data: insights, isLoading: insightsLoading } = useQuery({
+  const { data: insights } = useQuery({
     queryKey: ['customer', id, 'insights'],
     queryFn: () => apiService.getCustomerInsights(id!),
     enabled: !!id,
   })
 
   // Fetch transactions
-  const { data: transactions, isLoading: transactionsLoading } = useQuery({
+  const { data: transactions } = useQuery({
     queryKey: ['customer', id, 'transactions', page, filters],
-    queryFn: () => apiService.getCustomerTransactions(id!, { page, size: 20, ...filters }),
+    queryFn: () => apiService.getCustomerTransactions(id!, filters.from, filters.to, page, 20),
     enabled: !!id,
   })
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
   }
 
@@ -97,7 +92,7 @@ export function CustomerPage() {
     setPage(1) // Reset to first page when filters change
   }
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, newPage: number) => {
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, newPage: number) => {
     setPage(newPage)
   }
 
@@ -136,7 +131,7 @@ export function CustomerPage() {
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           <Chip label={profile.email_masked} variant="outlined" />
-          {profile.risk_flags.map((flag, index) => (
+          {profile.risk_flags.map((flag: string, index: number) => (
             <Chip
               key={index}
               label={flag}
@@ -235,7 +230,7 @@ export function CustomerPage() {
           {transactions && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
               <Pagination
-                count={transactions.pagination.totalPages}
+                count={Math.ceil(transactions.total / 20)}
                 page={page}
                 onChange={handlePageChange}
                 color="primary"
@@ -276,7 +271,7 @@ export function CustomerPage() {
                     {insights?.topMerchants[0]?.merchant || 'N/A'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    ₹{(insights?.topMerchants[0]?.amount || 0 / 100).toLocaleString()}
+                    ₹{((insights?.topMerchants[0]?.amount || 0) / 100).toLocaleString()}
                   </Typography>
                 </CardContent>
               </Card>
@@ -311,7 +306,7 @@ export function CustomerPage() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`₹${(value / 100).toLocaleString()}`, 'Amount']} />
+                      <Tooltip formatter={(value: number) => [`₹${(value / 100).toLocaleString()}`, 'Amount']} />
                       <Line type="monotone" dataKey="amount" stroke="#1976d2" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>

@@ -3,6 +3,61 @@ import { secureLogger } from '../utils/logger';
 import { circuitBreakerService } from './circuitBreaker';
 import { rateLimiterService } from './rateLimiter';
 
+// Custom metrics storage
+interface CustomMetrics {
+  toolCallTotal: Map<string, { total: number; ok: number; error: number }>;
+  agentFallbackTotal: Map<string, number>;
+  rateLimitBlockTotal: number;
+  agentLatencyMs: number[];
+  actionBlockedTotal: Map<string, number>;
+}
+
+// Global metrics instance
+const customMetrics: CustomMetrics = {
+  toolCallTotal: new Map(),
+  agentFallbackTotal: new Map(),
+  rateLimitBlockTotal: 0,
+  agentLatencyMs: [],
+  actionBlockedTotal: new Map(),
+};
+
+// Metrics recording functions
+export function recordToolCall(tool: string, success: boolean): void {
+  if (!customMetrics.toolCallTotal.has(tool)) {
+    customMetrics.toolCallTotal.set(tool, { total: 0, ok: 0, error: 0 });
+  }
+  
+  const toolMetrics = customMetrics.toolCallTotal.get(tool)!;
+  toolMetrics.total++;
+  if (success) {
+    toolMetrics.ok++;
+  } else {
+    toolMetrics.error++;
+  }
+}
+
+export function recordAgentFallback(tool: string): void {
+  const current = customMetrics.agentFallbackTotal.get(tool) || 0;
+  customMetrics.agentFallbackTotal.set(tool, current + 1);
+}
+
+export function recordRateLimitBlock(): void {
+  customMetrics.rateLimitBlockTotal++;
+}
+
+export function recordAgentLatency(latencyMs: number): void {
+  customMetrics.agentLatencyMs.push(latencyMs);
+  // Keep only last 1000 measurements
+  if (customMetrics.agentLatencyMs.length > 1000) {
+    customMetrics.agentLatencyMs = customMetrics.agentLatencyMs.slice(-1000);
+  }
+}
+
+export function recordActionBlocked(policy: string): void {
+  const current = customMetrics.actionBlockedTotal.get(policy) || 0;
+  customMetrics.actionBlockedTotal.set(policy, current + 1);
+}
+
 export interface MetricsData {
   timestamp: number;
   service: string;

@@ -132,7 +132,7 @@ class FraudAgent {
 
     // Get device history
     const deviceHistory = await query(`
-      SELECT device_id, last_seen
+      SELECT id as device_id, last_seen
       FROM devices 
       WHERE customer_id = $1
       ORDER BY last_seen DESC
