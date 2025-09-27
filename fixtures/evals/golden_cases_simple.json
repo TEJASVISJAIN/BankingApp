@@ -62,10 +62,10 @@
       }
     },
     "expected": {
-      "riskLevel": "medium",
-      "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "riskLevel": "low",
+      "recommendation": "monitor",
+      "actions": ["monitor"],
+      "confidence": 0.5
     },
     "category": "false_positive"
   },
@@ -135,10 +135,10 @@
       }
     },
     "expected": {
-      "riskLevel": "medium",
-      "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "riskLevel": "low",
+      "recommendation": "monitor",
+      "actions": ["monitor"],
+      "confidence": 0.5
     },
     "category": "reputation_based"
   },
@@ -243,7 +243,7 @@
     "description": "Knowledge base lookup for travel notice setup",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00015",
+      "transactionId": "txn_01428",
       "context": {
         "amount": 200,
         "merchant": "Airport Store",
@@ -267,7 +267,7 @@
     "description": "Ambiguous merchant name should prompt disambiguation",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00015",
+      "transactionId": "txn_01467",
       "context": {
         "amount": 75,
         "merchant": "ABC Store",

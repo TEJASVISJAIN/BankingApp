@@ -1,0 +1,1765 @@
+{
+  "timestamp": "2025-09-27T10:38:31.928Z",
+  "summary": {
+    "totalCases": 12,
+    "passedCases": 9,
+    "failedCases": 3,
+    "successRate": 75,
+    "fallbackRate": 0,
+    "avgLatency": {
+      "p50": 529,
+      "p95": 605,
+      "p99": 605
+    },
+    "policyDenials": {},
+    "confusionMatrix": {
+      "truePositives": 0,
+      "falsePositives": 0,
+      "trueNegatives": 9,
+      "falseNegatives": 0
+    },
+    "categoryBreakdown": {
+      "card_security": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "fraud_detection": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "false_positive": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "velocity_fraud": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "behavioral_anomaly": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "reputation_based": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "fallback_scenario": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "rate_limiting": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "policy_enforcement": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "pii_redaction": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "knowledge_base": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "disambiguation": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      }
+    },
+    "commonFailures": [
+      {
+        "error": "API Error: Triage session timeout",
+        "count": 3
+      }
+    ]
+  },
+  "results": [
+    {
+      "caseId": "eval_001",
+      "name": "Card Lost - Freeze Required",
+      "category": "card_security",
+      "passed": true,
+      "actual": {
+        "sessionId": "session_1758969507070_ehc9l8ush",
+        "customerId": "cust_001",
+        "transactionId": "txn_00015",
+        "startTime": 1758969507072,
+        "status": "completed",
+        "steps": [
+          {
+            "id": "get_context",
+            "agent": "orchestrator",
+            "tool": "get_context",
+            "status": "completed",
+            "startTime": 1758969507072,
+            "endTime": 1758969507081,
+            "duration": 9,
+            "output": {
+              "transactionId": "txn_00015",
+              "customerId": "cust_001",
+              "cardId": "card_029",
+              "amount": 10350,
+              "merchant": "Oberoi",
+              "mcc": "7011",
+              "timestamp": "2024-08-09T10:59:28.138Z",
+              "deviceId": "dev_13",
+              "geo": {
+                "ip": "154.209.14.155",
+                "os": "Android",
+                "browser": "Chrome"
+              }
+            }
+          },
+          {
+            "id": "kb_lookup",
+            "agent": "orchestrator",
+            "tool": "kb_lookup",
+            "status": "completed",
+            "startTime": 1758969507081,
+            "endTime": 1758969507083,
+            "duration": 2,
+            "output": {
+              "results": [
+                {
+                  "document": {
+                    "id": "fallback",
+                    "title": "Fallback Response",
+                    "anchor": "fallback",
+                    "content": "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location.",
+                    "chunks": [
+                      "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                    ]
+                  },
+                  "relevanceScore": 0.1,
+                  "matchedChunks": [
+                    "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                  ],
+                  "citations": [
+                    "Fallback Template"
+                  ]
+                }
+              ],
+              "totalResults": 1,
+              "query": "fraud detection transaction analysis",
+              "fallbackUsed": true,
+              "responseTime": 2
+            }
+          },
+          {
+            "id": "fraud_assessment",
+            "agent": "orchestrator",
+            "tool": "fraud_assessment",
+            "status": "completed",
+            "startTime": 1758969507083,
+            "endTime": 1758969507092,
+            "duration": 9,
+            "output": {
+              "riskScore": 70,
+              "riskLevel": "medium",
+              "signals": [
+                {
+                  "type": "device",
+                  "severity": "medium",
+                  "score": 70,
+                  "description": "New device detected: dev_13",
+                  "metadata": {
+                    "deviceId": "dev_13",
+                    "isNewDevice": true
+                  }
+                }
+              ],
+              "recommendation": "investigate",
+              "confidence": 0.7,
+              "reasoning": [
+                "New device detected (dev_13)",
+                "Monitor transaction closely",
+                "Consider additional verification",
+                "Knowledge Base References:",
+                "- Fallback Response: Fallback Template"
+              ]
+            }
+          },
+          {
+            "id": "compliance_check",
+            "agent": "orchestrator",
+            "tool": "compliance_check",
+            "status": "completed",
+            "startTime": 1758969507092,
+            "endTime": 1758969507092,
+            "duration": 0,
+            "output": {
+              "violations": [
+                "device_verification_required"
+              ],
+              "requiresOtp": false,
+              "requiresVerification": true
+            }
+          },
+          {
+            "id": "generate_recommendations",
+            "agent": "orchestrator",
+            "tool": "generate_recommendations",
+            "status": "completed",
+            "startTime": 1758969507093,
+            "endTime": 1758969507093,
+            "duration": 0,
+            "output": {
+              "recommendation": "investigate",
+              "reasoning": [
+                "Monitor transaction closely",
+                "Consider additional verification"
+              ],
+              "actions": [
+                "monitor",
+                "open_dispute",
+                "request_verification"
+              ]
+            }
+          }
+        ],
+        "fallbacks": [],
+        "policyBlocks": [],
+        "endTime": 1758969507093,
+        "totalDuration": 21,
+        "finalAssessment": {
+          "riskScore": 70,
+          "riskLevel": "medium",
+          "signals": [
+            {
+              "type": "device",
+              "severity": "medium",
+              "score": 70,
+              "description": "New device detected: dev_13",
+              "metadata": {
+                "deviceId": "dev_13",
+                "isNewDevice": true
+              }
+            }
+          ],
+          "recommendation": "investigate",
+          "confidence": 0.7,
+          "reasoning": [
+            "New device detected (dev_13)",
+            "Monitor transaction closely",
+            "Consider additional verification",
+            "Knowledge Base References:",
+            "- Fallback Response: Fallback Template"
+          ]
+        }
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [],
+      "duration": 605,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_002",
+      "name": "Unauthorized Charge - Dispute Required",
+      "category": "fraud_detection",
+      "passed": true,
+      "actual": {
+        "sessionId": "session_1758969507620_kjkdd6xl8",
+        "customerId": "cust_001",
+        "transactionId": "txn_00016",
+        "startTime": 1758969507622,
+        "status": "completed",
+        "steps": [
+          {
+            "id": "get_context",
+            "agent": "orchestrator",
+            "tool": "get_context",
+            "status": "completed",
+            "startTime": 1758969507622,
+            "endTime": 1758969507631,
+            "duration": 9,
+            "output": {
+              "transactionId": "txn_00016",
+              "customerId": "cust_001",
+              "cardId": "card_058",
+              "amount": 16432,
+              "merchant": "Burger King",
+              "mcc": "5814",
+              "timestamp": "2024-06-11T23:12:33.638Z",
+              "deviceId": "dev_46",
+              "geo": {
+                "ip": "149.247.190.169",
+                "os": "iOS",
+                "browser": "Safari"
+              }
+            }
+          },
+          {
+            "id": "kb_lookup",
+            "agent": "orchestrator",
+            "tool": "kb_lookup",
+            "status": "completed",
+            "startTime": 1758969507631,
+            "endTime": 1758969507634,
+            "duration": 3,
+            "output": {
+              "results": [
+                {
+                  "document": {
+                    "id": "fallback",
+                    "title": "Fallback Response",
+                    "anchor": "fallback",
+                    "content": "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location.",
+                    "chunks": [
+                      "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                    ]
+                  },
+                  "relevanceScore": 0.1,
+                  "matchedChunks": [
+                    "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                  ],
+                  "citations": [
+                    "Fallback Template"
+                  ]
+                }
+              ],
+              "totalResults": 1,
+              "query": "fraud detection transaction analysis",
+              "fallbackUsed": true,
+              "responseTime": 2
+            }
+          },
+          {
+            "id": "fraud_assessment",
+            "agent": "orchestrator",
+            "tool": "fraud_assessment",
+            "status": "completed",
+            "startTime": 1758969507634,
+            "endTime": 1758969507640,
+            "duration": 6,
+            "output": {
+              "riskScore": 70,
+              "riskLevel": "medium",
+              "signals": [
+                {
+                  "type": "device",
+                  "severity": "medium",
+                  "score": 70,
+                  "description": "New device detected: dev_46",
+                  "metadata": {
+                    "deviceId": "dev_46",
+                    "isNewDevice": true
+                  }
+                }
+              ],
+              "recommendation": "investigate",
+              "confidence": 0.7,
+              "reasoning": [
+                "New device detected (dev_46)",
+                "Monitor transaction closely",
+                "Consider additional verification",
+                "Knowledge Base References:",
+                "- Fallback Response: Fallback Template"
+              ]
+            }
+          },
+          {
+            "id": "compliance_check",
+            "agent": "orchestrator",
+            "tool": "compliance_check",
+            "status": "completed",
+            "startTime": 1758969507640,
+            "endTime": 1758969507641,
+            "duration": 1,
+            "output": {
+              "violations": [
+                "device_verification_required"
+              ],
+              "requiresOtp": false,
+              "requiresVerification": true
+            }
+          },
+          {
+            "id": "generate_recommendations",
+            "agent": "orchestrator",
+            "tool": "generate_recommendations",
+            "status": "completed",
+            "startTime": 1758969507641,
+            "endTime": 1758969507641,
+            "duration": 0,
+            "output": {
+              "recommendation": "investigate",
+              "reasoning": [
+                "Monitor transaction closely",
+                "Consider additional verification"
+              ],
+              "actions": [
+                "monitor",
+                "open_dispute",
+                "request_verification"
+              ]
+            }
+          }
+        ],
+        "fallbacks": [],
+        "policyBlocks": [],
+        "endTime": 1758969507642,
+        "totalDuration": 20,
+        "finalAssessment": {
+          "riskScore": 70,
+          "riskLevel": "medium",
+          "signals": [
+            {
+              "type": "device",
+              "severity": "medium",
+              "score": 70,
+              "description": "New device detected: dev_46",
+              "metadata": {
+                "deviceId": "dev_46",
+                "isNewDevice": true
+              }
+            }
+          ],
+          "recommendation": "investigate",
+          "confidence": 0.7,
+          "reasoning": [
+            "New device detected (dev_46)",
+            "Monitor transaction closely",
+            "Consider additional verification",
+            "Knowledge Base References:",
+            "- Fallback Response: Fallback Template"
+          ]
+        }
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [],
+      "duration": 540,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_003",
+      "name": "Duplicate Transaction - No Action",
+      "category": "false_positive",
+      "passed": true,
+      "actual": {
+        "sessionId": "session_1758969508163_25szq63be",
+        "customerId": "cust_001",
+        "transactionId": "txn_00018",
+        "startTime": 1758969508164,
+        "status": "completed",
+        "steps": [
+          {
+            "id": "get_context",
+            "agent": "orchestrator",
+            "tool": "get_context",
+            "status": "completed",
+            "startTime": 1758969508164,
+            "endTime": 1758969508169,
+            "duration": 5,
+            "output": {
+              "transactionId": "txn_00018",
+              "customerId": "cust_001",
+              "cardId": "card_084",
+              "amount": -5467,
+              "merchant": "Marriott",
+              "mcc": "7011",
+              "timestamp": "2024-03-15T19:43:45.947Z",
+              "deviceId": null
+            }
+          },
+          {
+            "id": "kb_lookup",
+            "agent": "orchestrator",
+            "tool": "kb_lookup",
+            "status": "completed",
+            "startTime": 1758969508169,
+            "endTime": 1758969508171,
+            "duration": 2,
+            "output": {
+              "results": [
+                {
+                  "document": {
+                    "id": "fallback",
+                    "title": "Fallback Response",
+                    "anchor": "fallback",
+                    "content": "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location.",
+                    "chunks": [
+                      "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                    ]
+                  },
+                  "relevanceScore": 0.1,
+                  "matchedChunks": [
+                    "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                  ],
+                  "citations": [
+                    "Fallback Template"
+                  ]
+                }
+              ],
+              "totalResults": 1,
+              "query": "fraud detection transaction analysis",
+              "fallbackUsed": true,
+              "responseTime": 1
+            }
+          },
+          {
+            "id": "fraud_assessment",
+            "agent": "orchestrator",
+            "tool": "fraud_assessment",
+            "status": "completed",
+            "startTime": 1758969508171,
+            "endTime": 1758969508176,
+            "duration": 5,
+            "output": {
+              "riskScore": 0,
+              "riskLevel": "low",
+              "signals": [],
+              "recommendation": "monitor",
+              "confidence": 0.5,
+              "reasoning": [
+                "Continue monitoring",
+                "Knowledge Base References:",
+                "- Fallback Response: Fallback Template"
+              ]
+            }
+          },
+          {
+            "id": "compliance_check",
+            "agent": "orchestrator",
+            "tool": "compliance_check",
+            "status": "completed",
+            "startTime": 1758969508176,
+            "endTime": 1758969508176,
+            "duration": 0,
+            "output": {
+              "violations": [],
+              "requiresOtp": false,
+              "requiresVerification": false
+            }
+          },
+          {
+            "id": "generate_recommendations",
+            "agent": "orchestrator",
+            "tool": "generate_recommendations",
+            "status": "completed",
+            "startTime": 1758969508177,
+            "endTime": 1758969508177,
+            "duration": 0,
+            "output": {
+              "recommendation": "monitor",
+              "reasoning": [
+                "Continue monitoring"
+              ],
+              "actions": [
+                "monitor"
+              ]
+            }
+          }
+        ],
+        "fallbacks": [],
+        "policyBlocks": [],
+        "endTime": 1758969508177,
+        "totalDuration": 13,
+        "finalAssessment": {
+          "riskScore": 0,
+          "riskLevel": "low",
+          "signals": [],
+          "recommendation": "monitor",
+          "confidence": 0.5,
+          "reasoning": [
+            "Continue monitoring",
+            "Knowledge Base References:",
+            "- Fallback Response: Fallback Template"
+          ]
+        }
+      },
+      "expected": {
+        "riskLevel": "low",
+        "recommendation": "monitor",
+        "actions": [
+          "monitor"
+        ],
+        "confidence": 0.5
+      },
+      "errors": [],
+      "duration": 529,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_004",
+      "name": "Geo-Velocity Violation",
+      "category": "velocity_fraud",
+      "passed": true,
+      "actual": {
+        "sessionId": "session_1758969508691_kdtl24bxj",
+        "customerId": "cust_001",
+        "transactionId": "txn_00020",
+        "startTime": 1758969508693,
+        "status": "completed",
+        "steps": [
+          {
+            "id": "get_context",
+            "agent": "orchestrator",
+            "tool": "get_context",
+            "status": "completed",
+            "startTime": 1758969508694,
+            "endTime": 1758969508702,
+            "duration": 8,
+            "output": {
+              "transactionId": "txn_00020",
+              "customerId": "cust_001",
+              "cardId": "card_024",
+              "amount": -18830,
+              "merchant": "Pizza Hut",
+              "mcc": "5812",
+              "timestamp": "2024-01-20T18:48:20.327Z",
+              "deviceId": "dev_45",
+              "geo": {
+                "ip": "1dac:d89b:e8ba:3caf:a6d2:97f3:4e4b:f061",
+                "os": "Android",
+                "browser": "Safari"
+              }
+            }
+          },
+          {
+            "id": "kb_lookup",
+            "agent": "orchestrator",
+            "tool": "kb_lookup",
+            "status": "completed",
+            "startTime": 1758969508702,
+            "endTime": 1758969508704,
+            "duration": 2,
+            "output": {
+              "results": [
+                {
+                  "document": {
+                    "id": "fallback",
+                    "title": "Fallback Response",
+                    "anchor": "fallback",
+                    "content": "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location.",
+                    "chunks": [
+                      "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                    ]
+                  },
+                  "relevanceScore": 0.1,
+                  "matchedChunks": [
+                    "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                  ],
+                  "citations": [
+                    "Fallback Template"
+                  ]
+                }
+              ],
+              "totalResults": 1,
+              "query": "fraud detection transaction analysis",
+              "fallbackUsed": true,
+              "responseTime": 2
+            }
+          },
+          {
+            "id": "fraud_assessment",
+            "agent": "orchestrator",
+            "tool": "fraud_assessment",
+            "status": "completed",
+            "startTime": 1758969508704,
+            "endTime": 1758969508712,
+            "duration": 8,
+            "output": {
+              "riskScore": 70,
+              "riskLevel": "medium",
+              "signals": [
+                {
+                  "type": "device",
+                  "severity": "medium",
+                  "score": 70,
+                  "description": "New device detected: dev_45",
+                  "metadata": {
+                    "deviceId": "dev_45",
+                    "isNewDevice": true
+                  }
+                }
+              ],
+              "recommendation": "investigate",
+              "confidence": 0.7,
+              "reasoning": [
+                "New device detected (dev_45)",
+                "Monitor transaction closely",
+                "Consider additional verification",
+                "Knowledge Base References:",
+                "- Fallback Response: Fallback Template"
+              ]
+            }
+          },
+          {
+            "id": "compliance_check",
+            "agent": "orchestrator",
+            "tool": "compliance_check",
+            "status": "completed",
+            "startTime": 1758969508712,
+            "endTime": 1758969508712,
+            "duration": 0,
+            "output": {
+              "violations": [
+                "device_verification_required"
+              ],
+              "requiresOtp": false,
+              "requiresVerification": true
+            }
+          },
+          {
+            "id": "generate_recommendations",
+            "agent": "orchestrator",
+            "tool": "generate_recommendations",
+            "status": "completed",
+            "startTime": 1758969508712,
+            "endTime": 1758969508712,
+            "duration": 0,
+            "output": {
+              "recommendation": "investigate",
+              "reasoning": [
+                "Monitor transaction closely",
+                "Consider additional verification"
+              ],
+              "actions": [
+                "monitor",
+                "open_dispute",
+                "request_verification"
+              ]
+            }
+          }
+        ],
+        "fallbacks": [],
+        "policyBlocks": [],
+        "endTime": 1758969508712,
+        "totalDuration": 19,
+        "finalAssessment": {
+          "riskScore": 70,
+          "riskLevel": "medium",
+          "signals": [
+            {
+              "type": "device",
+              "severity": "medium",
+              "score": 70,
+              "description": "New device detected: dev_45",
+              "metadata": {
+                "deviceId": "dev_45",
+                "isNewDevice": true
+              }
+            }
+          ],
+          "recommendation": "investigate",
+          "confidence": 0.7,
+          "reasoning": [
+            "New device detected (dev_45)",
+            "Monitor transaction closely",
+            "Consider additional verification",
+            "Knowledge Base References:",
+            "- Fallback Response: Fallback Template"
+          ]
+        }
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [],
+      "duration": 528,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_005",
+      "name": "Device Change + MCC Anomaly",
+      "category": "behavioral_anomaly",
+      "passed": true,
+      "actual": {
+        "sessionId": "session_1758969509218_u0b3rxomg",
+        "customerId": "cust_001",
+        "transactionId": "txn_00026",
+        "startTime": 1758969509220,
+        "status": "completed",
+        "steps": [
+          {
+            "id": "get_context",
+            "agent": "orchestrator",
+            "tool": "get_context",
+            "status": "completed",
+            "startTime": 1758969509220,
+            "endTime": 1758969509226,
+            "duration": 6,
+            "output": {
+              "transactionId": "txn_00026",
+              "customerId": "cust_001",
+              "cardId": "card_062",
+              "amount": 7860,
+              "merchant": "Reliance Fresh",
+              "mcc": "5411",
+              "timestamp": "2024-06-24T18:01:52.633Z",
+              "deviceId": "dev_11",
+              "geo": {
+                "ip": "189.226.5.54",
+                "os": "Android",
+                "browser": "Safari"
+              }
+            }
+          },
+          {
+            "id": "kb_lookup",
+            "agent": "orchestrator",
+            "tool": "kb_lookup",
+            "status": "completed",
+            "startTime": 1758969509226,
+            "endTime": 1758969509228,
+            "duration": 2,
+            "output": {
+              "results": [
+                {
+                  "document": {
+                    "id": "fallback",
+                    "title": "Fallback Response",
+                    "anchor": "fallback",
+                    "content": "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location.",
+                    "chunks": [
+                      "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                    ]
+                  },
+                  "relevanceScore": 0.1,
+                  "matchedChunks": [
+                    "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                  ],
+                  "citations": [
+                    "Fallback Template"
+                  ]
+                }
+              ],
+              "totalResults": 1,
+              "query": "fraud detection transaction analysis",
+              "fallbackUsed": true,
+              "responseTime": 2
+            }
+          },
+          {
+            "id": "fraud_assessment",
+            "agent": "orchestrator",
+            "tool": "fraud_assessment",
+            "status": "completed",
+            "startTime": 1758969509228,
+            "endTime": 1758969509235,
+            "duration": 7,
+            "output": {
+              "riskScore": 70,
+              "riskLevel": "medium",
+              "signals": [
+                {
+                  "type": "device",
+                  "severity": "medium",
+                  "score": 70,
+                  "description": "New device detected: dev_11",
+                  "metadata": {
+                    "deviceId": "dev_11",
+                    "isNewDevice": true
+                  }
+                }
+              ],
+              "recommendation": "investigate",
+              "confidence": 0.7,
+              "reasoning": [
+                "New device detected (dev_11)",
+                "Monitor transaction closely",
+                "Consider additional verification",
+                "Knowledge Base References:",
+                "- Fallback Response: Fallback Template"
+              ]
+            }
+          },
+          {
+            "id": "compliance_check",
+            "agent": "orchestrator",
+            "tool": "compliance_check",
+            "status": "completed",
+            "startTime": 1758969509236,
+            "endTime": 1758969509236,
+            "duration": 0,
+            "output": {
+              "violations": [
+                "device_verification_required"
+              ],
+              "requiresOtp": false,
+              "requiresVerification": true
+            }
+          },
+          {
+            "id": "generate_recommendations",
+            "agent": "orchestrator",
+            "tool": "generate_recommendations",
+            "status": "completed",
+            "startTime": 1758969509236,
+            "endTime": 1758969509236,
+            "duration": 0,
+            "output": {
+              "recommendation": "investigate",
+              "reasoning": [
+                "Monitor transaction closely",
+                "Consider additional verification"
+              ],
+              "actions": [
+                "monitor",
+                "open_dispute",
+                "request_verification"
+              ]
+            }
+          }
+        ],
+        "fallbacks": [],
+        "policyBlocks": [],
+        "endTime": 1758969509236,
+        "totalDuration": 16,
+        "finalAssessment": {
+          "riskScore": 70,
+          "riskLevel": "medium",
+          "signals": [
+            {
+              "type": "device",
+              "severity": "medium",
+              "score": 70,
+              "description": "New device detected: dev_11",
+              "metadata": {
+                "deviceId": "dev_11",
+                "isNewDevice": true
+              }
+            }
+          ],
+          "recommendation": "investigate",
+          "confidence": 0.7,
+          "reasoning": [
+            "New device detected (dev_11)",
+            "Monitor transaction closely",
+            "Consider additional verification",
+            "Knowledge Base References:",
+            "- Fallback Response: Fallback Template"
+          ]
+        }
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [],
+      "duration": 532,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_006",
+      "name": "Heavy Chargeback History",
+      "category": "reputation_based",
+      "passed": true,
+      "actual": {
+        "sessionId": "session_1758969509751_xkhrtmx3h",
+        "customerId": "cust_001",
+        "transactionId": "txn_00027",
+        "startTime": 1758969509752,
+        "status": "completed",
+        "steps": [
+          {
+            "id": "get_context",
+            "agent": "orchestrator",
+            "tool": "get_context",
+            "status": "completed",
+            "startTime": 1758969509753,
+            "endTime": 1758969509758,
+            "duration": 5,
+            "output": {
+              "transactionId": "txn_00027",
+              "customerId": "cust_001",
+              "cardId": "card_006",
+              "amount": 20902,
+              "merchant": "DMart",
+              "mcc": "5411",
+              "timestamp": "2024-02-27T05:22:22.269Z",
+              "deviceId": null
+            }
+          },
+          {
+            "id": "kb_lookup",
+            "agent": "orchestrator",
+            "tool": "kb_lookup",
+            "status": "completed",
+            "startTime": 1758969509759,
+            "endTime": 1758969509760,
+            "duration": 1,
+            "output": {
+              "results": [
+                {
+                  "document": {
+                    "id": "fallback",
+                    "title": "Fallback Response",
+                    "anchor": "fallback",
+                    "content": "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location.",
+                    "chunks": [
+                      "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                    ]
+                  },
+                  "relevanceScore": 0.1,
+                  "matchedChunks": [
+                    "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                  ],
+                  "citations": [
+                    "Fallback Template"
+                  ]
+                }
+              ],
+              "totalResults": 1,
+              "query": "fraud detection transaction analysis",
+              "fallbackUsed": true,
+              "responseTime": 1
+            }
+          },
+          {
+            "id": "fraud_assessment",
+            "agent": "orchestrator",
+            "tool": "fraud_assessment",
+            "status": "completed",
+            "startTime": 1758969509761,
+            "endTime": 1758969509768,
+            "duration": 7,
+            "output": {
+              "riskScore": 40,
+              "riskLevel": "low",
+              "signals": [
+                {
+                  "type": "time",
+                  "severity": "low",
+                  "score": 40,
+                  "description": "Transaction at unusual time: 5:00",
+                  "metadata": {
+                    "hour": 5,
+                    "isUnusualTime": true
+                  }
+                }
+              ],
+              "recommendation": "monitor",
+              "confidence": 0.5,
+              "reasoning": [
+                "Transaction at unusual time (5:00)",
+                "Continue monitoring",
+                "Knowledge Base References:",
+                "- Fallback Response: Fallback Template"
+              ]
+            }
+          },
+          {
+            "id": "compliance_check",
+            "agent": "orchestrator",
+            "tool": "compliance_check",
+            "status": "completed",
+            "startTime": 1758969509768,
+            "endTime": 1758969509768,
+            "duration": 0,
+            "output": {
+              "violations": [],
+              "requiresOtp": false,
+              "requiresVerification": false
+            }
+          },
+          {
+            "id": "generate_recommendations",
+            "agent": "orchestrator",
+            "tool": "generate_recommendations",
+            "status": "completed",
+            "startTime": 1758969509768,
+            "endTime": 1758969509768,
+            "duration": 0,
+            "output": {
+              "recommendation": "monitor",
+              "reasoning": [
+                "Continue monitoring"
+              ],
+              "actions": [
+                "monitor"
+              ]
+            }
+          }
+        ],
+        "fallbacks": [],
+        "policyBlocks": [],
+        "endTime": 1758969509768,
+        "totalDuration": 16,
+        "finalAssessment": {
+          "riskScore": 40,
+          "riskLevel": "low",
+          "signals": [
+            {
+              "type": "time",
+              "severity": "low",
+              "score": 40,
+              "description": "Transaction at unusual time: 5:00",
+              "metadata": {
+                "hour": 5,
+                "isUnusualTime": true
+              }
+            }
+          ],
+          "recommendation": "monitor",
+          "confidence": 0.5,
+          "reasoning": [
+            "Transaction at unusual time (5:00)",
+            "Continue monitoring",
+            "Knowledge Base References:",
+            "- Fallback Response: Fallback Template"
+          ]
+        }
+      },
+      "expected": {
+        "riskLevel": "low",
+        "recommendation": "monitor",
+        "actions": [
+          "monitor"
+        ],
+        "confidence": 0.5
+      },
+      "errors": [],
+      "duration": 530,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_007",
+      "name": "Risk Service Timeout - Fallback",
+      "category": "fallback_scenario",
+      "passed": true,
+      "actual": {
+        "sessionId": "session_1758969510282_4hvp94trm",
+        "customerId": "cust_001",
+        "transactionId": "txn_00033",
+        "startTime": 1758969510284,
+        "status": "completed",
+        "steps": [
+          {
+            "id": "get_context",
+            "agent": "orchestrator",
+            "tool": "get_context",
+            "status": "completed",
+            "startTime": 1758969510285,
+            "endTime": 1758969510290,
+            "duration": 5,
+            "output": {
+              "transactionId": "txn_00033",
+              "customerId": "cust_001",
+              "cardId": "card_096",
+              "amount": 28214,
+              "merchant": "Bharat Petroleum",
+              "mcc": "5541",
+              "timestamp": "2025-05-11T02:32:36.445Z",
+              "deviceId": "dev_18",
+              "geo": {
+                "ip": "186.69.120.93",
+                "os": "macOS",
+                "browser": "Firefox"
+              }
+            }
+          },
+          {
+            "id": "kb_lookup",
+            "agent": "orchestrator",
+            "tool": "kb_lookup",
+            "status": "completed",
+            "startTime": 1758969510290,
+            "endTime": 1758969510292,
+            "duration": 2,
+            "output": {
+              "results": [
+                {
+                  "document": {
+                    "id": "fallback",
+                    "title": "Fallback Response",
+                    "anchor": "fallback",
+                    "content": "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location.",
+                    "chunks": [
+                      "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                    ]
+                  },
+                  "relevanceScore": 0.1,
+                  "matchedChunks": [
+                    "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                  ],
+                  "citations": [
+                    "Fallback Template"
+                  ]
+                }
+              ],
+              "totalResults": 1,
+              "query": "fraud detection transaction analysis",
+              "fallbackUsed": true,
+              "responseTime": 2
+            }
+          },
+          {
+            "id": "fraud_assessment",
+            "agent": "orchestrator",
+            "tool": "fraud_assessment",
+            "status": "completed",
+            "startTime": 1758969510292,
+            "endTime": 1758969510299,
+            "duration": 7,
+            "output": {
+              "riskScore": 60,
+              "riskLevel": "medium",
+              "signals": [
+                {
+                  "type": "device",
+                  "severity": "medium",
+                  "score": 70,
+                  "description": "New device detected: dev_18",
+                  "metadata": {
+                    "deviceId": "dev_18",
+                    "isNewDevice": true
+                  }
+                },
+                {
+                  "type": "time",
+                  "severity": "low",
+                  "score": 40,
+                  "description": "Transaction at unusual time: 2:00",
+                  "metadata": {
+                    "hour": 2,
+                    "isUnusualTime": true
+                  }
+                }
+              ],
+              "recommendation": "investigate",
+              "confidence": 0.6,
+              "reasoning": [
+                "New device detected (dev_18)",
+                "Transaction at unusual time (2:00)",
+                "Monitor transaction closely",
+                "Consider additional verification",
+                "Knowledge Base References:",
+                "- Fallback Response: Fallback Template"
+              ]
+            }
+          },
+          {
+            "id": "compliance_check",
+            "agent": "orchestrator",
+            "tool": "compliance_check",
+            "status": "completed",
+            "startTime": 1758969510300,
+            "endTime": 1758969510300,
+            "duration": 0,
+            "output": {
+              "violations": [
+                "device_verification_required"
+              ],
+              "requiresOtp": false,
+              "requiresVerification": true
+            }
+          },
+          {
+            "id": "generate_recommendations",
+            "agent": "orchestrator",
+            "tool": "generate_recommendations",
+            "status": "completed",
+            "startTime": 1758969510300,
+            "endTime": 1758969510301,
+            "duration": 1,
+            "output": {
+              "recommendation": "investigate",
+              "reasoning": [
+                "Monitor transaction closely",
+                "Consider additional verification"
+              ],
+              "actions": [
+                "monitor",
+                "open_dispute",
+                "request_verification"
+              ]
+            }
+          }
+        ],
+        "fallbacks": [],
+        "policyBlocks": [],
+        "endTime": 1758969510301,
+        "totalDuration": 17,
+        "finalAssessment": {
+          "riskScore": 60,
+          "riskLevel": "medium",
+          "signals": [
+            {
+              "type": "device",
+              "severity": "medium",
+              "score": 70,
+              "description": "New device detected: dev_18",
+              "metadata": {
+                "deviceId": "dev_18",
+                "isNewDevice": true
+              }
+            },
+            {
+              "type": "time",
+              "severity": "low",
+              "score": 40,
+              "description": "Transaction at unusual time: 2:00",
+              "metadata": {
+                "hour": 2,
+                "isUnusualTime": true
+              }
+            }
+          ],
+          "recommendation": "investigate",
+          "confidence": 0.6,
+          "reasoning": [
+            "New device detected (dev_18)",
+            "Transaction at unusual time (2:00)",
+            "Monitor transaction closely",
+            "Consider additional verification",
+            "Knowledge Base References:",
+            "- Fallback Response: Fallback Template"
+          ]
+        }
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [],
+      "duration": 529,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_008",
+      "name": "Rate Limit - 429 Response",
+      "category": "rate_limiting",
+      "passed": true,
+      "actual": {
+        "sessionId": "session_1758969510812_8w6yea8ae",
+        "customerId": "cust_001",
+        "transactionId": "txn_00065",
+        "startTime": 1758969510813,
+        "status": "completed",
+        "steps": [
+          {
+            "id": "get_context",
+            "agent": "orchestrator",
+            "tool": "get_context",
+            "status": "completed",
+            "startTime": 1758969510813,
+            "endTime": 1758969510820,
+            "duration": 7,
+            "output": {
+              "transactionId": "txn_00065",
+              "customerId": "cust_001",
+              "cardId": "card_011",
+              "amount": 17385,
+              "merchant": "Marriott",
+              "mcc": "7011",
+              "timestamp": "2024-10-13T00:04:33.678Z",
+              "deviceId": null
+            }
+          },
+          {
+            "id": "kb_lookup",
+            "agent": "orchestrator",
+            "tool": "kb_lookup",
+            "status": "completed",
+            "startTime": 1758969510820,
+            "endTime": 1758969510822,
+            "duration": 2,
+            "output": {
+              "results": [
+                {
+                  "document": {
+                    "id": "fallback",
+                    "title": "Fallback Response",
+                    "anchor": "fallback",
+                    "content": "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location.",
+                    "chunks": [
+                      "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                    ]
+                  },
+                  "relevanceScore": 0.1,
+                  "matchedChunks": [
+                    "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                  ],
+                  "citations": [
+                    "Fallback Template"
+                  ]
+                }
+              ],
+              "totalResults": 1,
+              "query": "fraud detection transaction analysis",
+              "fallbackUsed": true,
+              "responseTime": 1
+            }
+          },
+          {
+            "id": "fraud_assessment",
+            "agent": "orchestrator",
+            "tool": "fraud_assessment",
+            "status": "completed",
+            "startTime": 1758969510822,
+            "endTime": 1758969510828,
+            "duration": 6,
+            "output": {
+              "riskScore": 0,
+              "riskLevel": "low",
+              "signals": [],
+              "recommendation": "monitor",
+              "confidence": 0.5,
+              "reasoning": [
+                "Continue monitoring",
+                "Knowledge Base References:",
+                "- Fallback Response: Fallback Template"
+              ]
+            }
+          },
+          {
+            "id": "compliance_check",
+            "agent": "orchestrator",
+            "tool": "compliance_check",
+            "status": "completed",
+            "startTime": 1758969510828,
+            "endTime": 1758969510828,
+            "duration": 0,
+            "output": {
+              "violations": [],
+              "requiresOtp": false,
+              "requiresVerification": false
+            }
+          },
+          {
+            "id": "generate_recommendations",
+            "agent": "orchestrator",
+            "tool": "generate_recommendations",
+            "status": "completed",
+            "startTime": 1758969510829,
+            "endTime": 1758969510829,
+            "duration": 0,
+            "output": {
+              "recommendation": "monitor",
+              "reasoning": [
+                "Continue monitoring"
+              ],
+              "actions": [
+                "monitor"
+              ]
+            }
+          }
+        ],
+        "fallbacks": [],
+        "policyBlocks": [],
+        "endTime": 1758969510829,
+        "totalDuration": 16,
+        "finalAssessment": {
+          "riskScore": 0,
+          "riskLevel": "low",
+          "signals": [],
+          "recommendation": "monitor",
+          "confidence": 0.5,
+          "reasoning": [
+            "Continue monitoring",
+            "Knowledge Base References:",
+            "- Fallback Response: Fallback Template"
+          ]
+        }
+      },
+      "expected": {
+        "statusCode": 429,
+        "retryAfterMs": 2000,
+        "rateLimited": true
+      },
+      "errors": [],
+      "duration": 529,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_009",
+      "name": "Policy Block - Unfreeze Without Identity",
+      "category": "policy_enforcement",
+      "passed": true,
+      "actual": {
+        "sessionId": "session_1758969511339_8r56ofs4w",
+        "customerId": "cust_001",
+        "transactionId": "txn_00073",
+        "startTime": 1758969511339,
+        "status": "completed",
+        "steps": [
+          {
+            "id": "get_context",
+            "agent": "orchestrator",
+            "tool": "get_context",
+            "status": "completed",
+            "startTime": 1758969511339,
+            "endTime": 1758969511346,
+            "duration": 7,
+            "output": {
+              "transactionId": "txn_00073",
+              "customerId": "cust_001",
+              "cardId": "card_200",
+              "amount": -26738,
+              "merchant": "Wendy's",
+              "mcc": "5814",
+              "timestamp": "2025-06-07T07:36:01.040Z",
+              "deviceId": "dev_29",
+              "geo": {
+                "ip": "9b1e:fff0:cb02:28c9:122f:6fb7:bec4:ade8",
+                "os": "iOS",
+                "browser": "Safari"
+              }
+            }
+          },
+          {
+            "id": "kb_lookup",
+            "agent": "orchestrator",
+            "tool": "kb_lookup",
+            "status": "completed",
+            "startTime": 1758969511346,
+            "endTime": 1758969511348,
+            "duration": 2,
+            "output": {
+              "results": [
+                {
+                  "document": {
+                    "id": "fallback",
+                    "title": "Fallback Response",
+                    "anchor": "fallback",
+                    "content": "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location.",
+                    "chunks": [
+                      "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                    ]
+                  },
+                  "relevanceScore": 0.1,
+                  "matchedChunks": [
+                    "Based on standard fraud detection protocols, monitor for unusual patterns in transaction velocity, amount, and location."
+                  ],
+                  "citations": [
+                    "Fallback Template"
+                  ]
+                }
+              ],
+              "totalResults": 1,
+              "query": "fraud detection transaction analysis",
+              "fallbackUsed": true,
+              "responseTime": 1
+            }
+          },
+          {
+            "id": "fraud_assessment",
+            "agent": "orchestrator",
+            "tool": "fraud_assessment",
+            "status": "completed",
+            "startTime": 1758969511348,
+            "endTime": 1758969511352,
+            "duration": 4,
+            "output": {
+              "riskScore": 70,
+              "riskLevel": "medium",
+              "signals": [
+                {
+                  "type": "device",
+                  "severity": "medium",
+                  "score": 70,
+                  "description": "New device detected: dev_29",
+                  "metadata": {
+                    "deviceId": "dev_29",
+                    "isNewDevice": true
+                  }
+                }
+              ],
+              "recommendation": "investigate",
+              "confidence": 0.7,
+              "reasoning": [
+                "New device detected (dev_29)",
+                "Monitor transaction closely",
+                "Consider additional verification",
+                "Knowledge Base References:",
+                "- Fallback Response: Fallback Template"
+              ]
+            }
+          },
+          {
+            "id": "compliance_check",
+            "agent": "orchestrator",
+            "tool": "compliance_check",
+            "status": "completed",
+            "startTime": 1758969511352,
+            "endTime": 1758969511352,
+            "duration": 0,
+            "output": {
+              "violations": [
+                "device_verification_required"
+              ],
+              "requiresOtp": false,
+              "requiresVerification": true
+            }
+          },
+          {
+            "id": "generate_recommendations",
+            "agent": "orchestrator",
+            "tool": "generate_recommendations",
+            "status": "completed",
+            "startTime": 1758969511352,
+            "endTime": 1758969511352,
+            "duration": 0,
+            "output": {
+              "recommendation": "investigate",
+              "reasoning": [
+                "Monitor transaction closely",
+                "Consider additional verification"
+              ],
+              "actions": [
+                "monitor",
+                "open_dispute",
+                "request_verification"
+              ]
+            }
+          }
+        ],
+        "fallbacks": [],
+        "policyBlocks": [],
+        "endTime": 1758969511352,
+        "totalDuration": 13,
+        "finalAssessment": {
+          "riskScore": 70,
+          "riskLevel": "medium",
+          "signals": [
+            {
+              "type": "device",
+              "severity": "medium",
+              "score": 70,
+              "description": "New device detected: dev_29",
+              "metadata": {
+                "deviceId": "dev_29",
+                "isNewDevice": true
+              }
+            }
+          ],
+          "recommendation": "investigate",
+          "confidence": 0.7,
+          "reasoning": [
+            "New device detected (dev_29)",
+            "Monitor transaction closely",
+            "Consider additional verification",
+            "Knowledge Base References:",
+            "- Fallback Response: Fallback Template"
+          ]
+        }
+      },
+      "expected": {
+        "statusCode": 403,
+        "blocked": true,
+        "reason": "identity_verification_required"
+      },
+      "errors": [],
+      "duration": 527,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_010",
+      "name": "PII Message - Redaction Required",
+      "category": "pii_redaction",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 29,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_011",
+      "name": "KB FAQ - Travel Notice",
+      "category": "knowledge_base",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 13,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_012",
+      "name": "Ambiguous Merchant - Disambiguation",
+      "category": "disambiguation",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 10,
+      "fallbackUsed": false
+    }
+  ]
+}
