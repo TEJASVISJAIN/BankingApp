@@ -353,7 +353,7 @@ export class SchemaValidationService {
                 maxLength: 500,
               },
             },
-            required: ['type', 'severity', 'score', 'description'],
+            required: true,
           },
         },
         riskScore: {

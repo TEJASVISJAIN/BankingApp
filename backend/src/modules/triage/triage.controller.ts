@@ -68,6 +68,9 @@ export class TriageController {
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Headers', 'Cache-Control');
 
+      // Register this SSE connection with the triage service
+      this.triageService.addSSEConnection(sessionId, res);
+
       // Send initial connection message
       res.write(`data: ${JSON.stringify({ type: 'connected', sessionId })}\n\n`);
 
@@ -82,6 +85,7 @@ export class TriageController {
             type: 'session_completed', 
             assessment: session.assessment 
           })}\n\n`);
+          this.triageService.removeSSEConnection(sessionId);
           res.end();
           return;
         }
@@ -92,6 +96,7 @@ export class TriageController {
           message: 'Session not found or expired',
           sessionId 
         })}\n\n`);
+        this.triageService.removeSSEConnection(sessionId);
         res.end();
         return;
       }
@@ -100,6 +105,7 @@ export class TriageController {
       const heartbeat = setInterval(() => {
         if (res.destroyed) {
           clearInterval(heartbeat);
+          this.triageService.removeSSEConnection(sessionId);
           return;
         }
         res.write(`data: ${JSON.stringify({ type: 'heartbeat', timestamp: Date.now() })}\n\n`);
@@ -108,6 +114,12 @@ export class TriageController {
       // Clean up on client disconnect
       res.on('close', () => {
         clearInterval(heartbeat);
+        this.triageService.removeSSEConnection(sessionId);
+      });
+
+      res.on('error', (error) => {
+        clearInterval(heartbeat);
+        this.triageService.removeSSEConnection(sessionId);
       });
       
       // Set a timeout to close the connection if no activity
@@ -119,6 +131,7 @@ export class TriageController {
       }, 30000); // 30 second timeout
     } catch (error) {
       res.write(`data: ${JSON.stringify({ type: 'error', message: error.message })}\n\n`);
+      this.triageService.removeSSEConnection(sessionId);
       res.end();
     }
   }

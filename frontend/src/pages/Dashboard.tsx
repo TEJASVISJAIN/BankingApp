@@ -28,6 +28,7 @@ import { useQuery } from '@tanstack/react-query'
 import apiService from '../services/apiService'
 import TriageDrawer from '../components/TriageDrawer'
 import SkeletonLoader from '../components/SkeletonLoader'
+import { maskCustomerId } from '../utils/piiRedaction'
 
 // Removed mock data - using real API data only
 
@@ -208,10 +209,10 @@ export function Dashboard() {
                     <TableCell>
                       <Box>
                         <Typography variant="body2" fontWeight="medium">
-                          Customer {alert.customerId}
+                          Customer {maskCustomerId(alert.customerId)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {alert.customerId}
+                          {maskCustomerId(alert.customerId)}
                         </Typography>
                       </Box>
                     </TableCell>
@@ -266,7 +267,7 @@ export function Dashboard() {
           open={triageDrawerOpen}
           onClose={handleCloseTriage}
           customerId={selectedAlert.customerId}
-          transactionId={selectedAlert.id}
+          transactionId={selectedAlert.transactionId}
         />
       )}
     </Box>

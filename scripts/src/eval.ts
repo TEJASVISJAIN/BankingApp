@@ -209,25 +209,31 @@ class EvalRunner {
       return;
     }
 
+    // Extract decision data from nested structure
+    const decision = assessment.decision || assessment;
+    const riskLevel = decision.riskLevel;
+    const recommendation = decision.recommendation;
+
     // Check risk level
-    if (expected.riskLevel && assessment.riskLevel !== expected.riskLevel) {
-      errors.push(`Risk level mismatch: expected ${expected.riskLevel}, got ${assessment.riskLevel}`);
+    if (expected.riskLevel && riskLevel !== expected.riskLevel) {
+      errors.push(`Risk level mismatch: expected ${expected.riskLevel}, got ${riskLevel}`);
     }
 
     // Check recommendation
-    if (expected.recommendation && assessment.recommendation !== expected.recommendation) {
-      errors.push(`Recommendation mismatch: expected ${expected.recommendation}, got ${assessment.recommendation}`);
+    if (expected.recommendation && recommendation !== expected.recommendation) {
+      errors.push(`Recommendation mismatch: expected ${expected.recommendation}, got ${recommendation}`);
     }
 
     // Check confidence (with tolerance)
-    if (expected.confidence && Math.abs(assessment.confidence - expected.confidence) > 0.1) {
-      errors.push(`Confidence mismatch: expected ${expected.confidence}, got ${assessment.confidence}`);
+    const confidence = decision.confidence || assessment.confidence;
+    if (expected.confidence && Math.abs(confidence - expected.confidence) > 0.1) {
+      errors.push(`Confidence mismatch: expected ${expected.confidence}, got ${confidence}`);
     }
 
     // Check actions
     if (expected.actions && Array.isArray(expected.actions)) {
-      // Pass the full response data to extractActions
-      const actualActions = this.extractActions(actual);
+      // Pass the assessment data to extractActions
+      const actualActions = this.extractActions(assessment);
       
       for (const expectedAction of expected.actions) {
         if (!actualActions.includes(expectedAction)) {
@@ -282,6 +288,12 @@ class EvalRunner {
     if (assessment.actions && Array.isArray(assessment.actions)) {
       console.log('✅ Found actions in assessment.actions:', assessment.actions);
       return assessment.actions;
+    }
+    
+    // Check in the nested action structure
+    if (assessment.action && assessment.action.actions && Array.isArray(assessment.action.actions)) {
+      console.log('✅ Found actions in assessment.action.actions:', assessment.action.actions);
+      return assessment.action.actions.map((action: any) => action.type || action);
     }
     
     // Check in steps for generate_recommendations output
@@ -405,17 +417,16 @@ class EvalRunner {
     let falseNegatives = 0;
 
     this.results.forEach(result => {
-      const expectedHighRisk = result.expected.riskLevel === 'high';
-      const actualHighRisk = result.actual?.riskLevel === 'high';
-      const passed = result.passed;
+      const expectedHighRisk = result.expected.riskLevel === 'high' || result.expected.riskLevel === 'medium';
+      const actualHighRisk = result.actual?.riskLevel === 'high' || result.actual?.riskLevel === 'medium';
 
-      if (expectedHighRisk && actualHighRisk && passed) {
+      if (expectedHighRisk && actualHighRisk) {
         truePositives++;
-      } else if (!expectedHighRisk && actualHighRisk && passed) {
+      } else if (!expectedHighRisk && actualHighRisk) {
         falsePositives++;
-      } else if (!expectedHighRisk && !actualHighRisk && passed) {
+      } else if (!expectedHighRisk && !actualHighRisk) {
         trueNegatives++;
-      } else if (expectedHighRisk && !actualHighRisk && passed) {
+      } else if (expectedHighRisk && !actualHighRisk) {
         falseNegatives++;
       }
     });

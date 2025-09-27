@@ -5,7 +5,7 @@
     "description": "Customer reports card lost, should trigger freeze",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00015",
+      "transactionId": "txn_445089",
       "context": {
         "amount": 500,
         "merchant": "ATM Withdrawal",
@@ -17,8 +17,8 @@
     "expected": {
       "riskLevel": "medium",
       "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "actions": ["monitor_transaction", "request_verification"],
+      "confidence": 0.85
     },
     "category": "card_security"
   },
@@ -28,7 +28,7 @@
     "description": "High amount unauthorized charge should trigger dispute",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00016",
+      "transactionId": "txn_32739",
       "context": {
         "amount": 4999,
         "merchant": "Unknown Merchant",
@@ -40,8 +40,8 @@
     "expected": {
       "riskLevel": "medium",
       "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "actions": ["monitor_transaction", "request_verification"],
+      "confidence": 0.85
     },
     "category": "fraud_detection"
   },
@@ -51,7 +51,7 @@
     "description": "Duplicate pending vs captured should not trigger dispute",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00018",
+      "transactionId": "txn_341117",
       "context": {
         "amount": 150,
         "merchant": "Grocery Store",
@@ -64,7 +64,7 @@
     "expected": {
       "riskLevel": "low",
       "recommendation": "monitor",
-      "actions": ["monitor"],
+      "actions": ["allow_transaction"],
       "confidence": 0.5
     },
     "category": "false_positive"
@@ -75,7 +75,7 @@
     "description": "Impossible travel distance should trigger high risk",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00020",
+      "transactionId": "txn_02105",
       "context": {
         "amount": 2500,
         "merchant": "ATM Withdrawal",
@@ -89,8 +89,8 @@
     "expected": {
       "riskLevel": "medium",
       "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "actions": ["monitor_transaction", "request_verification"],
+      "confidence": 0.85
     },
     "category": "velocity_fraud"
   },
@@ -100,7 +100,7 @@
     "description": "New device with unusual merchant category",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00026",
+      "transactionId": "txn_477663",
       "context": {
         "amount": 800,
         "merchant": "Luxury Store",
@@ -113,8 +113,8 @@
     "expected": {
       "riskLevel": "medium",
       "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "actions": ["monitor_transaction", "request_verification"],
+      "confidence": 0.85
     },
     "category": "behavioral_anomaly"
   },
@@ -124,7 +124,7 @@
     "description": "Customer with multiple chargebacks should escalate",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00027",
+      "transactionId": "txn_126211",
       "context": {
         "amount": 1200,
         "merchant": "Online Store",
@@ -137,7 +137,7 @@
     "expected": {
       "riskLevel": "low",
       "recommendation": "monitor",
-      "actions": ["monitor"],
+      "actions": ["allow_transaction"],
       "confidence": 0.5
     },
     "category": "reputation_based"
@@ -148,7 +148,7 @@
     "description": "External risk service timeout should use fallback",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00033",
+      "transactionId": "txn_778888",
       "context": {
         "amount": 300,
         "merchant": "Regular Store",
@@ -161,8 +161,8 @@
     "expected": {
       "riskLevel": "medium",
       "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "actions": ["monitor_transaction", "request_verification"],
+      "confidence": 0.85
     },
     "category": "fallback_scenario"
   },
@@ -172,7 +172,7 @@
     "description": "Rate limit exceeded should return 429",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00065",
+      "transactionId": "txn_430376",
       "context": {
         "amount": 100,
         "merchant": "Test Merchant",
@@ -195,7 +195,7 @@
     "description": "Unfreeze request without proper identity verification",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00073",
+      "transactionId": "txn_820592",
       "context": {
         "action": "unfreeze_card",
         "amount": 0,
@@ -219,7 +219,7 @@
     "description": "Message containing PII should be redacted",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_00015",
+      "transactionId": "txn_445089",
       "context": {
         "amount": 50,
         "merchant": "PII Test",
@@ -232,8 +232,8 @@
     "expected": {
       "riskLevel": "medium",
       "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "actions": ["monitor_transaction", "request_verification"],
+      "confidence": 0.85
     },
     "category": "pii_redaction"
   },
@@ -243,7 +243,7 @@
     "description": "Knowledge base lookup for travel notice setup",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_01428",
+      "transactionId": "txn_445089",
       "context": {
         "amount": 200,
         "merchant": "Airport Store",
@@ -256,8 +256,8 @@
     "expected": {
       "riskLevel": "medium",
       "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "actions": ["monitor_transaction", "request_verification"],
+      "confidence": 0.85
     },
     "category": "knowledge_base"
   },
@@ -267,7 +267,7 @@
     "description": "Ambiguous merchant name should prompt disambiguation",
     "input": {
       "customerId": "cust_001",
-      "transactionId": "txn_01467",
+      "transactionId": "txn_32739",
       "context": {
         "amount": 75,
         "merchant": "ABC Store",
@@ -281,8 +281,8 @@
     "expected": {
       "riskLevel": "medium",
       "recommendation": "investigate",
-      "actions": ["monitor", "open_dispute", "request_verification"],
-      "confidence": 0.7
+      "actions": ["monitor_transaction", "request_verification"],
+      "confidence": 0.85
     },
     "category": "disambiguation"
   }

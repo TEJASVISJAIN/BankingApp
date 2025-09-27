@@ -1,0 +1,3342 @@
+{
+  "timestamp": "2025-09-27T20:14:27.220Z",
+  "summary": {
+    "totalCases": 12,
+    "passedCases": 2,
+    "failedCases": 10,
+    "successRate": 16.666666666666664,
+    "fallbackRate": 0,
+    "avgLatency": {
+      "p50": 1528,
+      "p95": 1588,
+      "p99": 1588
+    },
+    "policyDenials": {},
+    "confusionMatrix": {
+      "truePositives": 0,
+      "falsePositives": 0,
+      "trueNegatives": 2,
+      "falseNegatives": 0
+    },
+    "categoryBreakdown": {
+      "card_security": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "fraud_detection": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "false_positive": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "velocity_fraud": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "behavioral_anomaly": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "reputation_based": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "fallback_scenario": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "rate_limiting": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "policy_enforcement": {
+        "passed": 1,
+        "total": 1,
+        "rate": 100
+      },
+      "pii_redaction": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "knowledge_base": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "disambiguation": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      }
+    },
+    "commonFailures": [
+      {
+        "error": "Missing expected action: monitor",
+        "count": 10
+      },
+      {
+        "error": "Risk level mismatch: expected medium, got undefined",
+        "count": 8
+      },
+      {
+        "error": "Recommendation mismatch: expected investigate, got undefined",
+        "count": 8
+      },
+      {
+        "error": "Missing expected action: open_dispute",
+        "count": 8
+      },
+      {
+        "error": "Missing expected action: request_verification",
+        "count": 8
+      }
+    ]
+  },
+  "results": [
+    {
+      "caseId": "eval_001",
+      "name": "Card Lost - Freeze Required",
+      "category": "card_security",
+      "passed": false,
+      "actual": {
+        "sessionId": "a984b4f0-6332-413a-9993-002465e82fdc",
+        "status": "completed",
+        "startTime": 1759004049888,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00015"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "a984b4f0-6332-413a-9993-002465e82fdc",
+          "timestamp": "2025-09-27T20:14:09.936Z"
+        },
+        "endTime": 1759004049937
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "Risk level mismatch: expected medium, got undefined",
+        "Recommendation mismatch: expected investigate, got undefined",
+        "Missing expected action: monitor",
+        "Missing expected action: open_dispute",
+        "Missing expected action: request_verification"
+      ],
+      "duration": 1588,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_002",
+      "name": "Unauthorized Charge - Dispute Required",
+      "category": "fraud_detection",
+      "passed": false,
+      "actual": {
+        "sessionId": "9b3e74b1-9856-4e59-9ebb-4567994641bf",
+        "status": "completed",
+        "startTime": 1759004051424,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00016"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "9b3e74b1-9856-4e59-9ebb-4567994641bf",
+          "timestamp": "2025-09-27T20:14:11.437Z"
+        },
+        "endTime": 1759004051437
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "Risk level mismatch: expected medium, got undefined",
+        "Recommendation mismatch: expected investigate, got undefined",
+        "Missing expected action: monitor",
+        "Missing expected action: open_dispute",
+        "Missing expected action: request_verification"
+      ],
+      "duration": 1526,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_003",
+      "name": "Duplicate Transaction - No Action",
+      "category": "false_positive",
+      "passed": false,
+      "actual": {
+        "sessionId": "5bade677-ff4c-49c1-87cf-27e17bfe42e9",
+        "status": "completed",
+        "startTime": 1759004052956,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00018"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "5bade677-ff4c-49c1-87cf-27e17bfe42e9",
+          "timestamp": "2025-09-27T20:14:12.971Z"
+        },
+        "endTime": 1759004052971
+      },
+      "expected": {
+        "riskLevel": "low",
+        "recommendation": "monitor",
+        "actions": [
+          "monitor"
+        ],
+        "confidence": 0.5
+      },
+      "errors": [
+        "Risk level mismatch: expected low, got undefined",
+        "Recommendation mismatch: expected monitor, got undefined",
+        "Missing expected action: monitor"
+      ],
+      "duration": 1532,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_004",
+      "name": "Geo-Velocity Violation",
+      "category": "velocity_fraud",
+      "passed": false,
+      "actual": {
+        "sessionId": "c26d91f2-45fd-48a6-b816-9fa765e6b142",
+        "status": "completed",
+        "startTime": 1759004054487,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00020"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "c26d91f2-45fd-48a6-b816-9fa765e6b142",
+          "timestamp": "2025-09-27T20:14:14.501Z"
+        },
+        "endTime": 1759004054501
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "Risk level mismatch: expected medium, got undefined",
+        "Recommendation mismatch: expected investigate, got undefined",
+        "Missing expected action: monitor",
+        "Missing expected action: open_dispute",
+        "Missing expected action: request_verification"
+      ],
+      "duration": 1528,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_005",
+      "name": "Device Change + MCC Anomaly",
+      "category": "behavioral_anomaly",
+      "passed": false,
+      "actual": {
+        "sessionId": "b5610860-7cac-41c1-b578-fd3f1e9dd9ce",
+        "status": "completed",
+        "startTime": 1759004056004,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00026"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "b5610860-7cac-41c1-b578-fd3f1e9dd9ce",
+          "timestamp": "2025-09-27T20:14:16.017Z"
+        },
+        "endTime": 1759004056018
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "Risk level mismatch: expected medium, got undefined",
+        "Recommendation mismatch: expected investigate, got undefined",
+        "Missing expected action: monitor",
+        "Missing expected action: open_dispute",
+        "Missing expected action: request_verification"
+      ],
+      "duration": 1518,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_006",
+      "name": "Heavy Chargeback History",
+      "category": "reputation_based",
+      "passed": false,
+      "actual": {
+        "sessionId": "a69f55b9-5bd5-472c-a529-d6d4125111f9",
+        "status": "completed",
+        "startTime": 1759004057523,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00027"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "a69f55b9-5bd5-472c-a529-d6d4125111f9",
+          "timestamp": "2025-09-27T20:14:17.537Z"
+        },
+        "endTime": 1759004057537
+      },
+      "expected": {
+        "riskLevel": "low",
+        "recommendation": "monitor",
+        "actions": [
+          "monitor"
+        ],
+        "confidence": 0.5
+      },
+      "errors": [
+        "Risk level mismatch: expected low, got undefined",
+        "Recommendation mismatch: expected monitor, got undefined",
+        "Missing expected action: monitor"
+      ],
+      "duration": 1519,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_007",
+      "name": "Risk Service Timeout - Fallback",
+      "category": "fallback_scenario",
+      "passed": false,
+      "actual": {
+        "sessionId": "cfce004e-54cb-44c0-95b3-3eb277fdc6f8",
+        "status": "completed",
+        "startTime": 1759004059055,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00033"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "cfce004e-54cb-44c0-95b3-3eb277fdc6f8",
+          "timestamp": "2025-09-27T20:14:19.070Z"
+        },
+        "endTime": 1759004059070
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "Risk level mismatch: expected medium, got undefined",
+        "Recommendation mismatch: expected investigate, got undefined",
+        "Missing expected action: monitor",
+        "Missing expected action: open_dispute",
+        "Missing expected action: request_verification"
+      ],
+      "duration": 1531,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_008",
+      "name": "Rate Limit - 429 Response",
+      "category": "rate_limiting",
+      "passed": true,
+      "actual": {
+        "sessionId": "d9031121-47e5-488d-b5c0-52bd9e0d29a4",
+        "status": "completed",
+        "startTime": 1759004060578,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00065"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "d9031121-47e5-488d-b5c0-52bd9e0d29a4",
+          "timestamp": "2025-09-27T20:14:20.592Z"
+        },
+        "endTime": 1759004060592
+      },
+      "expected": {
+        "statusCode": 429,
+        "retryAfterMs": 2000,
+        "rateLimited": true
+      },
+      "errors": [],
+      "duration": 1523,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_009",
+      "name": "Policy Block - Unfreeze Without Identity",
+      "category": "policy_enforcement",
+      "passed": true,
+      "actual": {
+        "sessionId": "7bf5cda7-6cad-48d9-959a-2a85bfe97e87",
+        "status": "completed",
+        "startTime": 1759004062106,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00073"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "7bf5cda7-6cad-48d9-959a-2a85bfe97e87",
+          "timestamp": "2025-09-27T20:14:22.118Z"
+        },
+        "endTime": 1759004062118
+      },
+      "expected": {
+        "statusCode": 403,
+        "blocked": true,
+        "reason": "identity_verification_required"
+      },
+      "errors": [],
+      "duration": 1525,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_010",
+      "name": "PII Message - Redaction Required",
+      "category": "pii_redaction",
+      "passed": false,
+      "actual": {
+        "sessionId": "8a738773-8b7a-4270-85a6-b57ee02959e9",
+        "status": "completed",
+        "startTime": 1759004063636,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_00015"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "8a738773-8b7a-4270-85a6-b57ee02959e9",
+          "timestamp": "2025-09-27T20:14:23.646Z"
+        },
+        "endTime": 1759004063646
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "Risk level mismatch: expected medium, got undefined",
+        "Recommendation mismatch: expected investigate, got undefined",
+        "Missing expected action: monitor",
+        "Missing expected action: open_dispute",
+        "Missing expected action: request_verification"
+      ],
+      "duration": 1531,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_011",
+      "name": "KB FAQ - Travel Notice",
+      "category": "knowledge_base",
+      "passed": false,
+      "actual": {
+        "sessionId": "26b18217-0e0e-4433-ba4e-d0d110e19533",
+        "status": "completed",
+        "startTime": 1759004065161,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_01428"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "26b18217-0e0e-4433-ba4e-d0d110e19533",
+          "timestamp": "2025-09-27T20:14:25.176Z"
+        },
+        "endTime": 1759004065176
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "Risk level mismatch: expected medium, got undefined",
+        "Recommendation mismatch: expected investigate, got undefined",
+        "Missing expected action: monitor",
+        "Missing expected action: open_dispute",
+        "Missing expected action: request_verification"
+      ],
+      "duration": 1529,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_012",
+      "name": "Ambiguous Merchant - Disambiguation",
+      "category": "disambiguation",
+      "passed": false,
+      "actual": {
+        "sessionId": "4380f23d-38ad-4c80-bfb7-299a06bbad45",
+        "status": "completed",
+        "startTime": 1759004066689,
+        "request": {
+          "customerId": "cust_001",
+          "transactionId": "txn_01467"
+        },
+        "assessment": {
+          "profile": {
+            "id": "cust_001",
+            "name": "Mr. Edmund Hand I",
+            "email": "Mar***@hotmail.com",
+            "phone": "N/A",
+            "riskFlags": [],
+            "preferences": null,
+            "createdAt": "2025-09-24T17:30:32.930Z"
+          },
+          "transactions": {
+            "recent": [
+              {
+                "id": "txn_445089",
+                "customerId": "cust_001",
+                "cardId": "card_072",
+                "amount": 55749,
+                "currency": "INR",
+                "merchant": "ATM Withdrawal",
+                "mcc": "6011",
+                "timestamp": "2025-06-29T23:56:40.977Z",
+                "deviceId": "dev_18",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:58:45.433Z"
+              },
+              {
+                "id": "txn_32739",
+                "customerId": "cust_001",
+                "cardId": "card_187",
+                "amount": -32032,
+                "currency": "INR",
+                "merchant": "Shell",
+                "mcc": "5541",
+                "timestamp": "2025-06-29T23:53:39.472Z",
+                "deviceId": "dev_47",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:34:25.310Z"
+              },
+              {
+                "id": "txn_341117",
+                "customerId": "cust_001",
+                "cardId": "card_199",
+                "amount": 73414,
+                "currency": "INR",
+                "merchant": "Metro",
+                "mcc": "4111",
+                "timestamp": "2025-06-29T23:31:05.024Z",
+                "deviceId": "dev_23",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:55:42.889Z"
+              },
+              {
+                "id": "txn_02105",
+                "customerId": "cust_001",
+                "cardId": "card_039",
+                "amount": 23341,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:57:12.522Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:00:20.937Z"
+              },
+              {
+                "id": "txn_477663",
+                "customerId": "cust_001",
+                "cardId": "card_085",
+                "amount": 7616,
+                "currency": "INR",
+                "merchant": "Flipkart",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T22:48:52.382Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:30:05.370Z"
+              },
+              {
+                "id": "txn_126211",
+                "customerId": "cust_001",
+                "cardId": "card_092",
+                "amount": -42910,
+                "currency": "INR",
+                "merchant": "Marriott",
+                "mcc": "7011",
+                "timestamp": "2025-06-29T22:31:37.327Z",
+                "deviceId": "dev_44",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-25T06:39:53.135Z"
+              },
+              {
+                "id": "txn_778888",
+                "customerId": "cust_001",
+                "cardId": "card_183",
+                "amount": 55060,
+                "currency": "INR",
+                "merchant": "Nykaa",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:59:05.566Z",
+                "deviceId": "dev_25",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:49:34.502Z"
+              },
+              {
+                "id": "txn_430376",
+                "customerId": "cust_001",
+                "cardId": "card_102",
+                "amount": -15536,
+                "currency": "INR",
+                "merchant": "Myntra",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T21:43:35.240Z",
+                "deviceId": "dev_33",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-26T08:27:20.907Z"
+              },
+              {
+                "id": "txn_820592",
+                "customerId": "cust_001",
+                "cardId": "card_167",
+                "amount": -44390,
+                "currency": "INR",
+                "merchant": "DMart",
+                "mcc": "5411",
+                "timestamp": "2025-06-29T21:04:23.433Z",
+                "deviceId": "dev_49",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:30:03.876Z"
+              },
+              {
+                "id": "txn_649634",
+                "customerId": "cust_001",
+                "cardId": "card_125",
+                "amount": -36856,
+                "currency": "INR",
+                "merchant": "Amazon",
+                "mcc": "5999",
+                "timestamp": "2025-06-29T20:48:37.774Z",
+                "deviceId": "dev_12",
+                "deviceInfo": null,
+                "metadata": null,
+                "createdAt": "2025-09-27T08:24:10.772Z"
+              }
+            ],
+            "total": 20,
+            "summary": {
+              "totalAmount": 128330,
+              "avgAmount": 6416.5,
+              "merchants": [
+                "ATM Withdrawal",
+                "Shell",
+                "Metro",
+                "Amazon",
+                "Flipkart",
+                "Marriott",
+                "Nykaa",
+                "Myntra",
+                "DMart",
+                "Indian Oil",
+                "Wendy's",
+                "Shoppers Stop",
+                "Lifestyle",
+                "More",
+                "ITC Hotels",
+                "NEFT"
+              ]
+            }
+          },
+          "riskSignals": {
+            "signals": [],
+            "riskScore": 0,
+            "riskLevel": "low",
+            "confidence": 0.5
+          },
+          "kbResults": {
+            "query": "",
+            "results": [
+              {
+                "id": "fraud_detection_basics",
+                "title": "Fraud Detection Basics",
+                "content": "Standard fraud detection procedures include monitoring transaction velocity, amount patterns, merchant behavior, and device changes. Risk assessment should consider customer history and current transaction context.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "risk_assessment_guidelines",
+                "title": "Risk Assessment Guidelines",
+                "content": "Risk levels: Low (score 0-0.3), Medium (0.3-0.7), High (0.7-1.0). Consider factors: transaction amount, velocity, merchant type, customer history, device information, and geographic location.",
+                "relevance": 0,
+                "source": "default_template"
+              },
+              {
+                "id": "compliance_requirements",
+                "title": "Compliance Requirements",
+                "content": "Ensure compliance with regulatory requirements including KYC verification, transaction limits, OTP requirements for high-value transactions, and PII protection standards.",
+                "relevance": 0,
+                "source": "default_template"
+              }
+            ],
+            "totalResults": 3,
+            "fallbackUsed": false
+          },
+          "decision": {
+            "riskLevel": "low",
+            "riskScore": 0,
+            "confidence": 0.5,
+            "reasoning": [],
+            "recommendation": "monitor",
+            "requiresReview": false,
+            "autoApprove": true
+          },
+          "action": {
+            "actions": [
+              {
+                "type": "allow_transaction",
+                "priority": "low",
+                "description": "Allow transaction to proceed"
+              }
+            ],
+            "nextSteps": [
+              "Continue monitoring",
+              "Update records"
+            ],
+            "escalation": false
+          },
+          "sessionId": "4380f23d-38ad-4c80-bfb7-299a06bbad45",
+          "timestamp": "2025-09-27T20:14:26.701Z"
+        },
+        "endTime": 1759004066701
+      },
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "Risk level mismatch: expected medium, got undefined",
+        "Recommendation mismatch: expected investigate, got undefined",
+        "Missing expected action: monitor",
+        "Missing expected action: open_dispute",
+        "Missing expected action: request_verification"
+      ],
+      "duration": 1527,
+      "fallbackUsed": false
+    }
+  ]
+}

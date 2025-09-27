@@ -51,7 +51,10 @@ export class InsightsService {
       return {
         topMerchants: topMerchants.slice(0, 5), // Top 5 merchants
         categories: spendCategories.slice(0, 10), // Top 10 categories
-        monthlyTrend: monthlyTrend
+        monthlyTrend: monthlyTrend,
+        totalSpend: totalSpend,
+        transactionCount: transactions.length,
+        riskScore: this.calculateRiskScore(transactions, chargebacks)
       };
     } catch (error) {
       secureLogger.error('Failed to get customer insights', { customerId, error: error.message });
@@ -196,5 +199,51 @@ export class InsightsService {
         averageTransaction: data.count > 0 ? data.amount / data.count : 0
       }))
       .sort((a, b) => a.month.localeCompare(b.month));
+  }
+
+  private calculateRiskScore(transactions: any[], chargebacks: any[]): number {
+    let riskScore = 0;
+    
+    // Base risk factors
+    const totalSpend = transactions.reduce((sum, t) => sum + t.amount, 0);
+    const avgTransactionAmount = totalSpend / transactions.length;
+    
+    // High transaction amounts increase risk
+    if (avgTransactionAmount > 50000) { // ₹500+
+      riskScore += 20;
+    } else if (avgTransactionAmount > 25000) { // ₹250+
+      riskScore += 10;
+    }
+    
+    // High transaction frequency increases risk
+    const transactionCount = transactions.length;
+    if (transactionCount > 100) {
+      riskScore += 15;
+    } else if (transactionCount > 50) {
+      riskScore += 8;
+    }
+    
+    // Chargebacks significantly increase risk
+    if (chargebacks.length > 0) {
+      riskScore += chargebacks.length * 25; // Each chargeback adds 25 points
+    }
+    
+    // Recent high-value transactions
+    const recentTransactions = transactions.filter(t => {
+      const transactionDate = new Date(t.ts);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return transactionDate > thirtyDaysAgo;
+    });
+    
+    const recentHighValue = recentTransactions.filter(t => t.amount > 100000).length; // ₹1000+
+    if (recentHighValue > 5) {
+      riskScore += 20;
+    } else if (recentHighValue > 2) {
+      riskScore += 10;
+    }
+    
+    // Cap risk score at 100
+    return Math.min(riskScore, 100);
   }
 }

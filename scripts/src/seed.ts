@@ -71,13 +71,19 @@ async function createCustomers(count: number) {
   try {
     await client.query('BEGIN');
     
-    for (const customer of customers) {
+    for (let i = 0; i < customers.length; i++) {
+      const customer = customers[i];
       await client.query(
         'INSERT INTO customers (id, name, email_masked, risk_flags) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO NOTHING',
         [customer.id, customer.name, customer.email_masked, JSON.stringify(customer.risk_flags)]
       );
+      
+      // Progress indicator
+      const progress = ((i + 1) / customers.length) * 100;
+      process.stdout.write(`\r📊 Customers: ${i + 1}/${customers.length} (${progress.toFixed(1)}%)`);
     }
     
+    console.log(''); // New line after progress
     await client.query('COMMIT');
     console.log(`✅ Created ${customers.length} customers`);
   } catch (error) {
@@ -109,13 +115,19 @@ async function createCards(customerCount: number, cardsPerCustomer: number = 2) 
   try {
     await client.query('BEGIN');
     
-    for (const card of cards) {
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i];
       await client.query(
         'INSERT INTO cards (id, customer_id, last4, status, network) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO NOTHING',
         [card.id, card.customer_id, card.last4, card.status, card.network]
       );
+      
+      // Progress indicator
+      const progress = ((i + 1) / cards.length) * 100;
+      process.stdout.write(`\r💳 Cards: ${i + 1}/${cards.length} (${progress.toFixed(1)}%)`);
     }
     
+    console.log(''); // New line after progress
     await client.query('COMMIT');
     console.log(`✅ Created ${cards.length} cards`);
   } catch (error) {
@@ -137,7 +149,8 @@ async function createTransactions(transactionCount: number) {
     const endIdx = Math.min(startIdx + batchSize, transactionCount);
     const batchSizeActual = endIdx - startIdx;
     
-    console.log(`Processing batch ${batch + 1}/${batches} (${startIdx + 1}-${endIdx})`);
+    const batchProgress = ((batch + 1) / batches) * 100;
+    process.stdout.write(`\r💸 Transactions: Batch ${batch + 1}/${batches} (${batchProgress.toFixed(1)}%) - Processing ${startIdx + 1}-${endIdx}`);
     
     const transactions = [];
     for (let i = startIdx; i < endIdx; i++) {
@@ -201,6 +214,7 @@ async function createTransactions(transactionCount: number) {
     }
   }
   
+  console.log(''); // New line after progress
   console.log(`✅ Created ${transactionCount} transactions`);
 }
 
@@ -230,13 +244,19 @@ async function createDevices(customerCount: number) {
   try {
     await client.query('BEGIN');
     
-    for (const device of devices) {
+    for (let i = 0; i < devices.length; i++) {
+      const device = devices[i];
       await client.query(
         'INSERT INTO devices (id, customer_id, device_type, device_info, last_seen) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO NOTHING',
         [device.id, device.customer_id, device.device_type, JSON.stringify(device.device_info), device.last_seen]
       );
+      
+      // Progress indicator
+      const progress = ((i + 1) / devices.length) * 100;
+      process.stdout.write(`\r📱 Devices: ${i + 1}/${devices.length} (${progress.toFixed(1)}%)`);
     }
     
+    console.log(''); // New line after progress
     await client.query('COMMIT');
     console.log(`✅ Created ${devices.length} devices`);
   } catch (error) {
@@ -298,17 +318,50 @@ async function createKnowledgeBase() {
 async function main() {
   try {
     console.log('🌱 Starting database seeding...');
+    console.log('📊 Total records to be created:');
+    console.log('   • 100 customers');
+    console.log('   • 200 cards (2 per customer)');
+    console.log('   • ~200 devices (1-3 per customer)');
+    console.log('   • 1,000,000 transactions');
+    console.log('   • 3 knowledge base documents');
+    console.log('');
+    
+    const startTime = Date.now();
+    let step = 1;
+    const totalSteps = 5;
     
     // Create base data
+    console.log(`[${step}/${totalSteps}] Creating customers...`);
     await createCustomers(100);
-    await createCards(100, 2);
-    await createDevices(100);
-    await createKnowledgeBase();
+    step++;
     
-    // Create 1M transactions
+    console.log(`[${step}/${totalSteps}] Creating cards...`);
+    await createCards(100, 2);
+    step++;
+    
+    console.log(`[${step}/${totalSteps}] Creating devices...`);
+    await createDevices(100);
+    step++;
+    
+    console.log(`[${step}/${totalSteps}] Creating knowledge base...`);
+    await createKnowledgeBase();
+    step++;
+    
+    console.log(`[${step}/${totalSteps}] Creating transactions...`);
     await createTransactions(1000000);
     
+    const endTime = Date.now();
+    const duration = ((endTime - startTime) / 1000).toFixed(1);
+    
+    console.log('');
     console.log('✅ Database seeding completed successfully!');
+    console.log(`⏱️  Total time: ${duration}s`);
+    console.log('📈 Records created:');
+    console.log('   • 100 customers');
+    console.log('   • 200 cards');
+    console.log('   • ~200 devices');
+    console.log('   • 1,000,000 transactions');
+    console.log('   • 3 knowledge base documents');
   } catch (error) {
     console.error('❌ Error during seeding:', error);
     process.exit(1);

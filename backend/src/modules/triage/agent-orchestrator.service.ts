@@ -55,7 +55,7 @@ export interface TriageResponse {
 @Injectable()
 export class AgentOrchestratorService extends EventEmitter {
   private readonly activeSessions = new Map<string, AgentTrace>();
-  private readonly MAX_CONCURRENT_SESSIONS = 10;
+  private readonly MAX_CONCURRENT_SESSIONS = 50;
   private readonly STEP_TIMEOUT = 1000; // 1 second (tool timeout)
   private readonly TOTAL_TIMEOUT = 5000; // 5 seconds (flow budget)
 
@@ -519,7 +519,20 @@ export class AgentOrchestratorService extends EventEmitter {
   private async getRecentTransactions(customerId: string, transactionId: string): Promise<any> {
     try {
       const transactions = await this.databaseService.findTransactionsByCustomer(customerId, 20);
+      secureLogger.info('Found transactions for customer', { 
+        customerId, 
+        transactionId, 
+        transactionCount: transactions.length,
+        transactionIds: transactions.map(t => t.id)
+      });
+      
       const currentTransaction = transactions.find(t => t.id === transactionId);
+      secureLogger.info('Current transaction lookup', { 
+        customerId, 
+        transactionId, 
+        found: !!currentTransaction,
+        currentTransaction: currentTransaction ? { id: currentTransaction.id, amount: currentTransaction.amount } : null
+      });
       
       return {
         current: currentTransaction,
@@ -542,19 +555,59 @@ export class AgentOrchestratorService extends EventEmitter {
       const currentTransaction = transactions.current;
       const riskSignals = [];
 
-      // Amount-based risk
-      if (currentTransaction.amount > 100000) { // > ₹1000
+      // Check if current transaction exists
+      if (!currentTransaction) {
+        secureLogger.warn('Current transaction not found', { transactionId, customerId: profile.id });
+        return {
+          signals: [],
+          riskScore: 0,
+          riskLevel: 'low',
+          confidence: 0.5,
+        };
+      }
+
+      // Amount-based risk with dynamic thresholds
+      const avgAmount = transactions.recent?.reduce((sum, t) => sum + Math.abs(t.amount), 0) / (transactions.recent?.length || 1);
+      const amountRatio = currentTransaction.amount / Math.max(avgAmount, 1);
+      
+      if (currentTransaction.amount > 500000) { // > ₹5000
         riskSignals.push({
           type: 'amount',
           severity: 'high',
-          score: 0.8,
-          description: 'High transaction amount',
+          score: 0.9,
+          description: `Very high transaction amount: ₹${currentTransaction.amount}`,
+        });
+      } else if (currentTransaction.amount > 200000 && amountRatio > 3) { // > ₹2000 and 3x average
+        riskSignals.push({
+          type: 'amount',
+          severity: 'medium',
+          score: 0.6,
+          description: `High transaction amount: ₹${currentTransaction.amount} (${amountRatio.toFixed(1)}x average)`,
         });
       }
 
-      // Velocity-based risk
-      const recentCount = transactions.recent.length;
-      if (recentCount > 5) {
+      // Velocity-based risk with time analysis
+      const recentCount = transactions.recent?.length || 0;
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const recentHourlyCount = transactions.recent?.filter(t => new Date(t.timestamp) > oneHourAgo).length || 0;
+      
+      // Smart velocity detection - only for actual anomalies
+      if (recentHourlyCount > 8) {
+        riskSignals.push({
+          type: 'velocity',
+          severity: 'high',
+          score: 0.8,
+          description: `Very high transaction velocity: ${recentHourlyCount} transactions in the last hour`,
+        });
+      } else if (recentHourlyCount > 5) {
+        riskSignals.push({
+          type: 'velocity',
+          severity: 'medium',
+          score: 0.6,
+          description: `High transaction velocity: ${recentHourlyCount} transactions in the last hour`,
+        });
+      } else if (recentCount > 8) {
+        // Fallback: if no hourly velocity but high total recent transactions
         riskSignals.push({
           type: 'velocity',
           severity: 'medium',
@@ -563,8 +616,11 @@ export class AgentOrchestratorService extends EventEmitter {
         });
       }
 
-      // Merchant-based risk
-      const merchantCount = transactions.recent.filter(t => t.merchant === currentTransaction.merchant).length;
+      // Merchant-based risk with frequency analysis
+      const merchantCount = transactions.recent?.filter(t => t.merchant === currentTransaction.merchant).length || 0;
+      const totalRecent = transactions.recent?.length || 1;
+      const merchantFrequency = merchantCount / totalRecent;
+      
       if (merchantCount === 0) {
         riskSignals.push({
           type: 'merchant',
@@ -572,15 +628,45 @@ export class AgentOrchestratorService extends EventEmitter {
           score: 0.5,
           description: 'New merchant for customer',
         });
+      } else if (merchantFrequency > 0.5) {
+        riskSignals.push({
+          type: 'merchant',
+          severity: 'low',
+          score: 0.2,
+          description: `Frequent merchant: ${currentTransaction.merchant} (${Math.round(merchantFrequency * 100)}% of transactions)`,
+        });
+      }
+
+      // Time-based risk analysis
+      const hour = new Date(currentTransaction.timestamp).getHours();
+      if (hour >= 2 && hour <= 6) {
+        riskSignals.push({
+          type: 'time',
+          severity: 'medium',
+          score: 0.4,
+          description: `Unusual transaction time: ${hour}:00`,
+        });
+      }
+
+      // MCC-based risk (high-risk merchant categories)
+      const highRiskMCCs = ['6011', '6012', '5541', '5542']; // ATM, Financial, Gas stations
+      if (highRiskMCCs.includes(currentTransaction.mcc)) {
+        riskSignals.push({
+          type: 'merchant',
+          severity: 'low',
+          score: 0.3,
+          description: `High-risk merchant category: ${currentTransaction.mcc}`,
+        });
       }
 
       // Calculate overall risk score
       const totalScore = riskSignals.reduce((sum, signal) => sum + signal.score, 0);
-      const riskLevel = totalScore > 1.5 ? 'high' : totalScore > 0.8 ? 'medium' : 'low';
+      const riskScore = Math.min(totalScore, 1.0);
+      const riskLevel = riskScore >= 0.9 ? 'high' : riskScore >= 0.5 ? 'medium' : 'low';
 
       return {
         signals: riskSignals,
-        riskScore: Math.min(totalScore, 1.0),
+        riskScore,
         riskLevel,
         confidence: 0.85,
       };

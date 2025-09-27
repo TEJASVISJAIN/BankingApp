@@ -105,4 +105,8 @@ export const secureLogger = {
     const redactedMeta = meta ? redactObject(meta) : meta;
     logger.warn(message, { ...redactedMeta, masked: true });
   },
+  debug: (message: string, meta?: any) => {
+    const redactedMeta = meta ? redactObject(meta) : meta;
+    logger.debug(message, { ...redactedMeta, masked: true });
+  },
 };

@@ -12,62 +12,46 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  CircularProgress,
+  Alert,
 } from '@mui/material'
 import {
   Visibility,
-  Warning,
-  CheckCircle,
-  Cancel,
 } from '@mui/icons-material'
-
-// Mock data for alerts
-const mockAlerts = [
-  {
-    id: 'alert_001',
-    customerId: 'cust_001',
-    customerName: 'Rajesh Kumar',
-    riskScore: 85,
-    status: 'pending',
-    amount: 25000,
-    merchant: 'Unknown Merchant',
-    timestamp: '2025-01-15T10:30:00Z',
-    reasons: ['Velocity anomaly', 'New merchant', 'High amount'],
-    description: 'Unusual spending pattern detected',
-  },
-  {
-    id: 'alert_002',
-    customerId: 'cust_002',
-    customerName: 'Priya Sharma',
-    riskScore: 92,
-    status: 'in_progress',
-    amount: 50000,
-    merchant: 'Suspicious Store',
-    timestamp: '2025-01-15T09:15:00Z',
-    reasons: ['Geo-velocity', 'Device change', 'Past chargebacks'],
-    description: 'High-risk transaction flagged',
-  },
-  {
-    id: 'alert_003',
-    customerId: 'cust_003',
-    customerName: 'Amit Patel',
-    riskScore: 45,
-    status: 'resolved',
-    amount: 5000,
-    merchant: 'Regular Store',
-    timestamp: '2025-01-15T08:45:00Z',
-    reasons: ['Amount spike'],
-    description: 'Amount spike detected',
-  },
-]
+import { useQuery } from '@tanstack/react-query'
+import { useParams, useNavigate } from 'react-router-dom'
+import apiService from '../services/apiService'
+import { maskCustomerId } from '../utils/piiRedaction'
+import TriageDrawer from '../components/TriageDrawer'
 
 export function AlertsPage() {
+  const { id: alertId } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [selectedAlert, setSelectedAlert] = React.useState<any>(null)
-  const [triageDialogOpen, setTriageDialogOpen] = React.useState(false)
+  const [triageDrawerOpen, setTriageDrawerOpen] = React.useState(false)
+
+  // Fetch real fraud alerts data
+  const { data: fraudAlerts, isLoading, error } = useQuery({
+    queryKey: ['fraud-alerts'],
+    queryFn: () => apiService.getFraudTriage(),
+    staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 60 * 1000, // Refetch every minute
+  })
+
+  // Auto-open triage drawer for specific alert ID
+  React.useEffect(() => {
+    if (alertId && fraudAlerts && !isLoading) {
+      const alert = fraudAlerts.find((a: any) => a.id === alertId)
+      if (alert) {
+        const alertWithReasons = {
+          ...alert,
+          reasons: alert.reasons || getDefaultRiskReasons(alert.riskScore, alert.riskLevel)
+        }
+        setSelectedAlert(alertWithReasons)
+        setTriageDrawerOpen(true)
+      }
+    }
+  }, [alertId, fraudAlerts, isLoading])
 
   const getRiskColor = (score: number) => {
     if (score >= 80) return 'error'
@@ -85,25 +69,83 @@ export function AlertsPage() {
   }
 
   const handleTriageClick = (alert: any) => {
-    setSelectedAlert(alert)
-    setTriageDialogOpen(true)
+    // Add default risk reasons if none exist
+    const alertWithReasons = {
+      ...alert,
+      reasons: alert.reasons || getDefaultRiskReasons(alert.riskScore, alert.riskLevel)
+    }
+    setSelectedAlert(alertWithReasons)
+    setTriageDrawerOpen(true)
+  }
+
+  const getDefaultRiskReasons = (riskScore: number, riskLevel: string) => {
+    const reasons = []
+    
+    if (riskScore >= 80) {
+      reasons.push('High risk transaction')
+      reasons.push('Unusual spending pattern')
+    } else if (riskScore >= 60) {
+      reasons.push('Medium risk transaction')
+      reasons.push('Suspicious merchant')
+    } else {
+      reasons.push('Low risk transaction')
+    }
+    
+    if (riskLevel === 'high') {
+      reasons.push('Velocity anomaly')
+      reasons.push('Geo-location mismatch')
+    } else if (riskLevel === 'medium') {
+      reasons.push('Amount spike')
+    }
+    
+    return reasons
   }
 
   const handleCloseTriage = () => {
-    setTriageDialogOpen(false)
+    setTriageDrawerOpen(false)
     setSelectedAlert(null)
+    // Navigate back to alerts list if we came from a specific alert
+    if (alertId) {
+      navigate('/alerts')
+    }
   }
 
-  const handleAction = (action: string) => {
-    console.log(`Action: ${action} for alert: ${selectedAlert?.id}`)
-    // Here you would call the API to perform the action
-    handleCloseTriage()
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+        <Typography variant="body1" sx={{ ml: 2 }}>
+          Loading fraud alerts...
+        </Typography>
+      </Box>
+    )
   }
+
+  if (error) {
+    return (
+      <Box>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Fraud Alerts Queue
+        </Typography>
+        <Alert severity="error">
+          Failed to load fraud alerts. Please try again.
+        </Alert>
+      </Box>
+    )
+  }
+
+  const alerts = fraudAlerts || []
 
   return (
     <Box>
       <Typography variant="h4" component="h1" gutterBottom>
-        Fraud Alerts Queue
+        Fraud Alerts Queue ({alerts.length} alerts)
+        {alertId && selectedAlert && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Viewing: {selectedAlert.customerName} - {selectedAlert.merchant} (₹{(selectedAlert.amount / 100).toLocaleString()})
+          </Typography>
+        )}
       </Typography>
       
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -121,144 +163,83 @@ export function AlertsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {mockAlerts.map((alert) => (
-                <TableRow key={alert.id} hover>
-                  <TableCell>
-                    <Box>
-                      <Typography variant="body2" fontWeight="medium">
-                        {alert.customerName}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {alert.customerId}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={alert.riskScore}
-                      color={getRiskColor(alert.riskScore)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight="medium">
-                      ₹{(alert.amount / 100).toLocaleString()}
+              {alerts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <Typography variant="body2" color="text.secondary">
+                      No fraud alerts found
                     </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{alert.merchant}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={alert.status}
-                      color={getStatusColor(alert.status)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {new Date(alert.timestamp).toLocaleString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Tooltip title="Triage Alert">
-                      <IconButton 
-                        size="small"
-                        onClick={() => handleTriageClick(alert)}
-                      >
-                        <Visibility />
-                      </IconButton>
-                    </Tooltip>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                alerts.map((alert: any) => (
+                  <TableRow key={alert.id} hover>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="body2" fontWeight="medium">
+                          {alert.customerName || 'Unknown Customer'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {maskCustomerId(alert.customerId)}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={alert.riskScore || 0}
+                        color={getRiskColor(alert.riskScore || 0)}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="medium">
+                        ₹{((alert.amount || 0) / 100).toLocaleString()}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {alert.merchant || 'Unknown Merchant'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={alert.status || 'pending'}
+                        color={getStatusColor(alert.status || 'pending')}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {alert.timestamp ? new Date(alert.timestamp).toLocaleString() : 'N/A'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="Triage Alert">
+                        <IconButton 
+                          size="small"
+                          onClick={() => handleTriageClick(alert)}
+                        >
+                          <Visibility />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       </Paper>
 
-      {/* Triage Dialog */}
-      <Dialog 
-        open={triageDialogOpen} 
-        onClose={handleCloseTriage}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          Fraud Triage - {selectedAlert?.customerName}
-        </DialogTitle>
-        <DialogContent>
-          {selectedAlert && (
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Alert Details
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Customer: {selectedAlert.customerName} ({selectedAlert.customerId})
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Amount: ₹{(selectedAlert.amount / 100).toLocaleString()}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Merchant: {selectedAlert.merchant}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Risk Score: {selectedAlert.riskScore}
-                </Typography>
-              </Box>
-
-              <Typography variant="h6" gutterBottom>
-                Risk Reasons
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                {selectedAlert.reasons.map((reason: string, index: number) => (
-                  <Chip
-                    key={index}
-                    label={reason}
-                    color="warning"
-                    size="small"
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                ))}
-              </Box>
-
-              <Typography variant="h6" gutterBottom>
-                Recommended Actions
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Button
-                  variant="contained"
-                  color="error"
-                  startIcon={<Warning />}
-                  onClick={() => handleAction('freeze_card')}
-                >
-                  Freeze Card
-                </Button>
-                <Button
-                  variant="contained"
-                  color="warning"
-                  startIcon={<Cancel />}
-                  onClick={() => handleAction('open_dispute')}
-                >
-                  Open Dispute
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="success"
-                  startIcon={<CheckCircle />}
-                  onClick={() => handleAction('mark_false_positive')}
-                >
-                  Mark False Positive
-                </Button>
-              </Box>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseTriage}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      {/* Triage Drawer */}
+      {selectedAlert && (
+        <TriageDrawer
+          open={triageDrawerOpen}
+          onClose={handleCloseTriage}
+          customerId={selectedAlert.customerId}
+          transactionId={selectedAlert.transactionId || selectedAlert.id}
+        />
+      )}
     </Box>
   )
 }

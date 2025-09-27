@@ -41,7 +41,7 @@ import { redisConfig } from './config/redis.config';
       password: process.env.DB_PASSWORD || 'aegis_password',
       database: process.env.DB_NAME || 'aegis_support',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: false, // Temporarily disabled to avoid schema conflicts
       logging: process.env.NODE_ENV === 'development',
     }),
 

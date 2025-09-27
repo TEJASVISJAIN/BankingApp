@@ -154,29 +154,22 @@ CREATE INDEX idx_eval_results_name ON eval_results (eval_name);
 CREATE INDEX idx_eval_results_passed ON eval_results (passed);
 CREATE INDEX idx_eval_results_created ON eval_results (created_at);
 
--- Agent traces table
-CREATE TABLE agent_traces (
-    id SERIAL PRIMARY KEY,
-    session_id VARCHAR(100) UNIQUE NOT NULL,
-    customer_id VARCHAR(50) NOT NULL,
-    transaction_id VARCHAR(50) NOT NULL,
-    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    end_time TIMESTAMP WITH TIME ZONE,
-    duration INTEGER, -- milliseconds
-    status agent_status NOT NULL DEFAULT 'running',
-    risk_score INTEGER DEFAULT 0,
-    risk_level risk_level DEFAULT 'low',
-    recommendation VARCHAR(50) DEFAULT 'monitor',
-    confidence DECIMAL(3,2) DEFAULT 0.0,
-    fallbacks JSONB DEFAULT '[]'::jsonb,
-    policy_blocks JSONB DEFAULT '[]'::jsonb,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- Agent traces table (updated schema)
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS transaction_id VARCHAR(50);
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS start_time TIMESTAMP WITH TIME ZONE;
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS end_time TIMESTAMP WITH TIME ZONE;
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS duration INTEGER;
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS risk_score INTEGER DEFAULT 0;
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS risk_level risk_level DEFAULT 'low';
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS recommendation VARCHAR(50) DEFAULT 'monitor';
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS confidence DECIMAL(3,2) DEFAULT 0.0;
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS fallbacks JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE agent_traces ADD COLUMN IF NOT EXISTS policy_blocks JSONB DEFAULT '[]'::jsonb;
 
 -- Agent steps table
 CREATE TABLE agent_steps (
     id SERIAL PRIMARY KEY,
-    trace_id INTEGER NOT NULL REFERENCES agent_traces(id) ON DELETE CASCADE,
+    trace_id UUID NOT NULL REFERENCES agent_traces(id) ON DELETE CASCADE,
     step_id VARCHAR(100) NOT NULL,
     agent VARCHAR(50) NOT NULL,
     tool VARCHAR(50) NOT NULL,
@@ -193,7 +186,7 @@ CREATE TABLE agent_steps (
 -- Risk signals table
 CREATE TABLE risk_signals (
     id SERIAL PRIMARY KEY,
-    trace_id INTEGER NOT NULL REFERENCES agent_traces(id) ON DELETE CASCADE,
+    trace_id UUID NOT NULL REFERENCES agent_traces(id) ON DELETE CASCADE,
     signal_type signal_type NOT NULL,
     severity signal_severity NOT NULL,
     score INTEGER NOT NULL DEFAULT 0,
@@ -202,13 +195,11 @@ CREATE TABLE risk_signals (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Indexes for agent traces
-CREATE INDEX idx_agent_traces_session ON agent_traces (session_id);
-CREATE INDEX idx_agent_traces_customer ON agent_traces (customer_id);
-CREATE INDEX idx_agent_traces_transaction ON agent_traces (transaction_id);
-CREATE INDEX idx_agent_traces_start_time ON agent_traces (start_time);
-CREATE INDEX idx_agent_traces_status ON agent_traces (status);
-CREATE INDEX idx_agent_traces_risk_level ON agent_traces (risk_level);
+-- Additional indexes for agent traces (if not already created)
+CREATE INDEX IF NOT EXISTS idx_agent_traces_transaction ON agent_traces (transaction_id);
+CREATE INDEX IF NOT EXISTS idx_agent_traces_start_time ON agent_traces (start_time);
+CREATE INDEX IF NOT EXISTS idx_agent_traces_status ON agent_traces (status);
+CREATE INDEX IF NOT EXISTS idx_agent_traces_risk_level ON agent_traces (risk_level);
 
 -- Indexes for agent steps
 CREATE INDEX idx_agent_steps_trace ON agent_steps (trace_id);

@@ -14,6 +14,7 @@ import { PromptInjectionDefenseService } from './prompt-injection-defense.servic
 import { DatabaseModule } from '../database/database.module';
 import { AuthModule } from '../auth/auth.module';
 import { MetricsModule } from '../metrics/metrics.module';
+import { GroqService } from '../../services/groq.service';
 
 @Module({
   imports: [DatabaseModule, AuthModule, MetricsModule],
@@ -30,6 +31,7 @@ import { MetricsModule } from '../metrics/metrics.module';
     CircuitBreakerService,
     SchemaValidationService,
     PromptInjectionDefenseService,
+    GroqService,
   ],
   exports: [
     TriageService,

@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import React, { useState, useMemo } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
   Typography,
@@ -19,11 +19,21 @@ import {
   Pagination,
   TextField,
   Button,
+  InputAdornment,
+  IconButton,
+  Avatar,
+  CircularProgress,
+  Alert,
 } from '@mui/material'
 import {
   TrendingUp,
   ShoppingCart,
   Category,
+  Search,
+  Visibility,
+  Person,
+  Email,
+  Phone,
 } from '@mui/icons-material'
 import { useQuery } from '@tanstack/react-query'
 import apiService from '../services/apiService'
@@ -51,6 +61,260 @@ function TabPanel(props: TabPanelProps) {
   )
 }
 
+// Customer List Page Component
+function CustomerListPage() {
+  const navigate = useNavigate()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(10)
+
+  // Fetch fraud alerts to get customer data
+  const { data: fraudAlerts, isLoading, error } = useQuery({
+    queryKey: ['fraud-alerts'],
+    queryFn: () => apiService.getFraudTriage(),
+    staleTime: 30 * 1000, // 30 seconds
+  })
+
+  // Extract unique customers from fraud alerts
+  const customers = useMemo(() => {
+    if (!fraudAlerts) return []
+    
+    const customerMap = new Map()
+    fraudAlerts.forEach((alert: any) => {
+      if (!customerMap.has(alert.customerId)) {
+        customerMap.set(alert.customerId, {
+          id: alert.customerId,
+          name: alert.customerName || 'Unknown Customer',
+          email: alert.email || 'N/A',
+          phone: alert.phone || 'N/A',
+          riskScore: alert.riskScore || 0,
+          riskLevel: alert.riskLevel || 'low',
+          lastTransaction: alert.timestamp,
+          transactionCount: 1,
+          totalAmount: alert.amount || 0,
+        })
+      } else {
+        const existing = customerMap.get(alert.customerId)
+        existing.transactionCount += 1
+        existing.totalAmount += alert.amount || 0
+        if (new Date(alert.timestamp) > new Date(existing.lastTransaction)) {
+          existing.lastTransaction = alert.timestamp
+        }
+      }
+    })
+    
+    return Array.from(customerMap.values())
+  }, [fraudAlerts])
+
+  // Filter customers based on search term
+  const filteredCustomers = useMemo(() => {
+    if (!searchTerm) return customers
+    
+    return customers.filter(customer => 
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.id.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [customers, searchTerm])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredCustomers.length / pageSize)
+  const paginatedCustomers = filteredCustomers.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  )
+
+  const handleCustomerClick = (customerId: string) => {
+    navigate(`/customers/${customerId}`)
+  }
+
+  const getRiskColor = (level: string) => {
+    switch (level) {
+      case 'high': return 'error'
+      case 'medium': return 'warning'
+      case 'low': return 'success'
+      default: return 'default'
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+        <Typography variant="body1" sx={{ ml: 2 }}>
+          Loading customers...
+        </Typography>
+      </Box>
+    )
+  }
+
+  if (error) {
+    return (
+      <Box>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Customer Management
+        </Typography>
+        <Alert severity="error">
+          Failed to load customer data. Please try again.
+        </Alert>
+      </Box>
+    )
+  }
+
+  return (
+    <Box>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Customer Management
+      </Typography>
+      
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        Manage and view customer details, transaction history, and risk assessments.
+      </Typography>
+
+      {/* Search and Filters */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              placeholder="Search customers by name, email, or ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="body2" color="text.secondary">
+              {filteredCustomers.length} customer{filteredCustomers.length !== 1 ? 's' : ''} found
+            </Typography>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Customer List */}
+      <Paper>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Customer</TableCell>
+                <TableCell>Contact</TableCell>
+                <TableCell>Risk Level</TableCell>
+                <TableCell>Transactions</TableCell>
+                <TableCell>Total Amount</TableCell>
+                <TableCell>Last Activity</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedCustomers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <Box sx={{ py: 4 }}>
+                      <Person sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                      <Typography variant="h6" color="text.secondary">
+                        {searchTerm ? 'No customers found matching your search' : 'No customers found'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {searchTerm ? 'Try adjusting your search terms' : 'Customer data will appear here when fraud alerts are generated'}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedCustomers.map((customer) => (
+                  <TableRow key={customer.id} hover>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar sx={{ bgcolor: 'primary.main' }}>
+                          {customer.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2" fontWeight="medium">
+                            {customer.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {customer.id}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <Email sx={{ fontSize: 16, color: 'text.secondary' }} />
+                          <Typography variant="body2">
+                            {customer.email}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Phone sx={{ fontSize: 16, color: 'text.secondary' }} />
+                          <Typography variant="body2">
+                            {customer.phone}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={customer.riskLevel.toUpperCase()}
+                        color={getRiskColor(customer.riskLevel)}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="medium">
+                        {customer.transactionCount}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="medium">
+                        ₹{(customer.totalAmount / 100).toLocaleString()}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {new Date(customer.lastTransaction).toLocaleDateString()}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCustomerClick(customer.id)}
+                        color="primary"
+                      >
+                        <Visibility />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={(_, newPage) => setPage(newPage)}
+              color="primary"
+            />
+          </Box>
+        )}
+      </Paper>
+    </Box>
+  )
+}
+
 export function CustomerPage() {
   const { id } = useParams<{ id: string }>()
   const [tabValue, setTabValue] = useState(0)
@@ -63,7 +327,7 @@ export function CustomerPage() {
   })
 
   // Fetch customer profile
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: ['customer', id, 'profile'],
     queryFn: () => apiService.getCustomerProfile(id!),
     enabled: !!id,
@@ -76,12 +340,24 @@ export function CustomerPage() {
     enabled: !!id,
   })
 
+  // Debug: Log insights data
+  React.useEffect(() => {
+    if (insights) {
+      console.log('Customer insights data:', insights)
+    }
+  }, [insights])
+
   // Fetch transactions
   const { data: transactions } = useQuery({
     queryKey: ['customer', id, 'transactions', page, filters],
     queryFn: () => apiService.getCustomerTransactions(id!, filters.from, filters.to, page, 20),
     enabled: !!id,
   })
+
+  // If no ID, show customer list
+  if (!id) {
+    return <CustomerListPage />
+  }
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
@@ -97,11 +373,37 @@ export function CustomerPage() {
   }
 
   if (profileLoading) {
-    return <Typography>Loading customer profile...</Typography>
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Typography>Loading customer profile...</Typography>
+      </Box>
+    )
+  }
+
+  if (profileError) {
+    return (
+      <Box>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Customer Not Found
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          The customer with ID "{id}" could not be found.
+        </Typography>
+      </Box>
+    )
   }
 
   if (!profile) {
-    return <Typography>Customer not found</Typography>
+    return (
+      <Box>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Customer Not Found
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          The customer with ID "{id}" could not be found.
+        </Typography>
+      </Box>
+    )
   }
 
   // Mock data for charts
@@ -130,8 +432,8 @@ export function CustomerPage() {
           {profile.name}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-          <Chip label={profile.email_masked} variant="outlined" />
-          {profile.risk_flags.map((flag: string, index: number) => (
+          <Chip label={profile.email} variant="outlined" />
+          {(profile.riskFlags || []).map((flag: string, index: number) => (
             <Chip
               key={index}
               label={flag}
@@ -230,7 +532,7 @@ export function CustomerPage() {
           {transactions && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
               <Pagination
-                count={Math.ceil(transactions.total / 20)}
+                count={Math.ceil((transactions?.pagination?.total || 0) / 20)}
                 page={page}
                 onChange={handlePageChange}
                 color="primary"
@@ -251,7 +553,7 @@ export function CustomerPage() {
                     <Typography variant="h6">Total Spend</Typography>
                   </Box>
                   <Typography variant="h4" color="primary">
-                    ₹{(insights?.totalSpend || 0 / 100).toLocaleString()}
+                    ₹{((insights?.totalSpend || 0) / 100).toLocaleString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {insights?.transactionCount || 0} transactions
@@ -268,10 +570,10 @@ export function CustomerPage() {
                     <Typography variant="h6">Top Merchant</Typography>
                   </Box>
                   <Typography variant="h6">
-                    {insights?.topMerchants[0]?.merchant || 'N/A'}
+                    {insights?.topMerchants?.[0]?.merchant || 'N/A'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    ₹{((insights?.topMerchants[0]?.amount || 0) / 100).toLocaleString()}
+                    ₹{((insights?.topMerchants?.[0]?.amount || 0) / 100).toLocaleString()}
                   </Typography>
                 </CardContent>
               </Card>

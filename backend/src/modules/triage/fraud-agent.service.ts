@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { GroqService } from '../../services/groq.service';
 import { secureLogger } from '../../utils/logger';
 
 export interface RiskSignal {
@@ -43,7 +44,10 @@ export class FraudAgentService {
   private readonly GEO_VELOCITY_THRESHOLD = 1000; // km in 1 hour
   private readonly UNUSUAL_MERCHANT_THRESHOLD = 0.1; // 10% of customer's transactions
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly groqService: GroqService
+  ) {}
 
   async assessFraud(context: TransactionContext, kbResults?: any): Promise<FraudAssessment> {
     const start = Date.now();
@@ -76,7 +80,24 @@ export class FraudAgentService {
       const riskLevel = this.determineRiskLevel(riskScore);
       const recommendation = this.getRecommendation(riskLevel, validSignals);
       const confidence = this.calculateConfidence(validSignals);
-      const reasoning = this.generateReasoning(validSignals);
+      
+      // Generate enhanced reasoning using Groq
+      let reasoning: string[];
+      try {
+        const groqRiskSummary = await this.groqService.generateRiskSummary(
+          validSignals,
+          customerData.customer,
+          context
+        );
+        reasoning = [
+          groqRiskSummary.riskSummary,
+          groqRiskSummary.explanation,
+          ...groqRiskSummary.recommendations
+        ];
+      } catch (error) {
+        secureLogger.warn('Groq risk summary failed, using fallback', { error: error.message });
+        reasoning = this.generateReasoning(validSignals);
+      }
 
       const assessment: FraudAssessment = {
         riskScore,
@@ -125,17 +146,36 @@ export class FraudAgentService {
   private async checkVelocityAnomaly(context: TransactionContext, customerData: any): Promise<RiskSignal | null> {
     try {
       const oneHourAgo = new Date(context.timestamp.getTime() - 60 * 60 * 1000);
+      const oneDayAgo = new Date(context.timestamp.getTime() - 24 * 60 * 60 * 1000);
+      
       const recentTransactions = customerData.transactions.filter(
         (tx: any) => new Date(tx.timestamp) > oneHourAgo
       );
+      
+      const dailyTransactions = customerData.transactions.filter(
+        (tx: any) => new Date(tx.timestamp) > oneDayAgo
+      );
 
-      if (recentTransactions.length >= this.VELOCITY_THRESHOLD) {
+      // Calculate customer's typical velocity patterns
+      const avgDailyTransactions = dailyTransactions.length;
+      const velocityRatio = recentTransactions.length / Math.max(avgDailyTransactions / 24, 1);
+      
+      // Dynamic threshold based on customer's typical behavior
+      const dynamicThreshold = Math.max(this.VELOCITY_THRESHOLD, Math.ceil(avgDailyTransactions / 12));
+      
+      if (recentTransactions.length >= dynamicThreshold || velocityRatio > 3) {
+        const severity = velocityRatio > 5 ? 'high' : velocityRatio > 3 ? 'medium' : 'low';
         return {
           type: 'velocity',
-          severity: 'high',
-          score: Math.min(recentTransactions.length / this.VELOCITY_THRESHOLD, 3),
-          description: `High transaction velocity: ${recentTransactions.length} transactions in the last hour`,
-          metadata: { transactionCount: recentTransactions.length, threshold: this.VELOCITY_THRESHOLD },
+          severity,
+          score: Math.min(velocityRatio / 2, 3),
+          description: `High transaction velocity: ${recentTransactions.length} transactions in the last hour (${velocityRatio.toFixed(1)}x normal rate)`,
+          metadata: { 
+            transactionCount: recentTransactions.length, 
+            threshold: dynamicThreshold,
+            velocityRatio: velocityRatio.toFixed(2),
+            avgDailyTransactions
+          },
         };
       }
 
@@ -148,19 +188,42 @@ export class FraudAgentService {
 
   private async checkAmountAnomaly(context: TransactionContext, customerData: any): Promise<RiskSignal | null> {
     try {
-      if (context.amount > this.AMOUNT_THRESHOLD) {
-        const avgAmount = customerData.transactions.reduce(
-          (sum: number, tx: any) => sum + tx.amount, 0
-        ) / customerData.transactions.length;
-
+      if (customerData.transactions.length === 0) return null;
+      
+      const recentTransactions = customerData.transactions.slice(0, 30); // Last 30 transactions
+      const amounts = recentTransactions.map((tx: any) => tx.amount);
+      
+      // Calculate statistical measures
+      const avgAmount = amounts.reduce((sum: number, amount: number) => sum + amount, 0) / amounts.length;
+      const sortedAmounts = amounts.sort((a: number, b: number) => a - b);
+      const medianAmount = sortedAmounts[Math.floor(sortedAmounts.length / 2)];
+      
+      // Calculate standard deviation for more sophisticated analysis
+      const variance = amounts.reduce((sum: number, amount: number) => sum + Math.pow(amount - avgAmount, 2), 0) / amounts.length;
+      const stdDev = Math.sqrt(variance);
+      
+      // Dynamic threshold based on customer's spending patterns
+      const dynamicThreshold = Math.max(this.AMOUNT_THRESHOLD, avgAmount * 3);
+      const zScore = (context.amount - avgAmount) / (stdDev || 1);
+      
+      if (context.amount > dynamicThreshold || zScore > 2) {
         const amountRatio = context.amount / (avgAmount || 1);
+        const severity = zScore > 4 ? 'high' : zScore > 2 ? 'medium' : 'low';
         
         return {
           type: 'amount',
-          severity: amountRatio > 5 ? 'high' : 'medium',
-          score: Math.min(amountRatio, 3),
-          description: `Unusual transaction amount: ₹${context.amount / 100} (avg: ₹${Math.round(avgAmount / 100)})`,
-          metadata: { amount: context.amount, averageAmount: avgAmount, ratio: amountRatio },
+          severity,
+          score: Math.min(zScore / 2, 3),
+          description: `Unusual transaction amount: ₹${(context.amount / 100).toLocaleString()} (${amountRatio.toFixed(1)}x average, z-score: ${zScore.toFixed(1)})`,
+          metadata: { 
+            amount: context.amount, 
+            avgAmount, 
+            medianAmount,
+            stdDev,
+            zScore: zScore.toFixed(2),
+            ratio: amountRatio.toFixed(2),
+            threshold: dynamicThreshold 
+          },
         };
       }
 
@@ -177,23 +240,45 @@ export class FraudAgentService {
 
       const recentTransactions = customerData.transactions
         .filter((tx: any) => tx.deviceInfo?.geo)
-        .slice(0, 10);
+        .slice(0, 20);
 
       if (recentTransactions.length === 0) return null;
 
-      const lastLocation = recentTransactions[0].deviceInfo.geo;
-      const distance = this.calculateDistance(
-        context.geo.lat, context.geo.lon,
-        lastLocation.lat, lastLocation.lon
+      // Check multiple recent locations for better pattern analysis
+      const distances = recentTransactions.map((tx: any) => {
+        const distance = this.calculateDistance(
+          context.geo.lat, context.geo.lon,
+          tx.deviceInfo.geo.lat, tx.deviceInfo.geo.lon
+        );
+        return { distance, timestamp: new Date(tx.timestamp) };
+      });
+
+      // Find the closest recent transaction
+      const closestTransaction = distances.reduce((min, current) => 
+        current.distance < min.distance ? current : min
       );
 
-      if (distance > this.GEO_VELOCITY_THRESHOLD) {
+      // Calculate time-based velocity (distance/time)
+      const timeDiff = (context.timestamp.getTime() - closestTransaction.timestamp.getTime()) / (1000 * 60 * 60); // hours
+      const velocity = closestTransaction.distance / Math.max(timeDiff, 0.1); // km/h
+
+      // Dynamic threshold based on time and typical travel patterns
+      const maxReasonableVelocity = 1000; // km/h (commercial flight speed)
+      const impossibleTravel = velocity > maxReasonableVelocity && closestTransaction.distance > 100;
+
+      if (impossibleTravel || closestTransaction.distance > this.GEO_VELOCITY_THRESHOLD) {
+        const severity = velocity > maxReasonableVelocity ? 'high' : 'medium';
         return {
           type: 'location',
-          severity: 'high',
-          score: Math.min(distance / this.GEO_VELOCITY_THRESHOLD, 3),
-          description: `Impossible travel: ${Math.round(distance)}km from last transaction`,
-          metadata: { distance, threshold: this.GEO_VELOCITY_THRESHOLD },
+          severity,
+          score: Math.min(closestTransaction.distance / this.GEO_VELOCITY_THRESHOLD, 3),
+          description: `Suspicious location: ${Math.round(closestTransaction.distance)}km from last transaction (${velocity.toFixed(0)} km/h)`,
+          metadata: { 
+            distance: closestTransaction.distance, 
+            velocity: velocity.toFixed(1),
+            threshold: this.GEO_VELOCITY_THRESHOLD,
+            timeDiff: timeDiff.toFixed(1)
+          },
         };
       }
 
@@ -286,14 +371,15 @@ export class FraudAgentService {
   }
 
   private determineRiskLevel(riskScore: number): 'low' | 'medium' | 'high' {
-    if (riskScore >= 0.7) return 'high';
-    if (riskScore >= 0.4) return 'medium';
+    if (riskScore >= 0.9) return 'high';
+    if (riskScore >= 0.5) return 'medium';
     return 'low';
   }
 
   private getRecommendation(riskLevel: string, signals: RiskSignal[]): 'monitor' | 'investigate' | 'block' {
     if (riskLevel === 'high') return 'block';
-    if (riskLevel === 'medium' || signals.length > 0) return 'investigate';
+    if (riskLevel === 'medium') return 'investigate';
+    if (signals.length > 0) return 'investigate';
     return 'monitor';
   }
 

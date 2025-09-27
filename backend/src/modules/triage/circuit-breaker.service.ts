@@ -154,7 +154,7 @@ export class CircuitBreakerService {
     this.circuitStates.set(key, { ...state });
   }
 
-  getCircuitState(key: string): CircuitBreakerState {
+  public getCircuitStatePublic(key: string): CircuitBreakerState {
     return this.getCircuitState(key);
   }
 

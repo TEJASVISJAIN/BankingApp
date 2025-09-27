@@ -231,10 +231,24 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
       eventSourceRef.current.close();
     }
 
-    const eventSource = new EventSource(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/triage/stream/${sessionId}?X-API-Key=dev_key_789`);
+    console.log('Connecting to SSE stream for sessionId:', sessionId);
+    const sseUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/triage/stream/${sessionId}?X-API-Key=dev_key_789`;
+    console.log('SSE URL:', sseUrl);
+    const eventSource = new EventSource(sseUrl);
     eventSourceRef.current = eventSource;
 
+    // Add timeout to prevent hanging connections
+    const timeout = setTimeout(() => {
+      if (eventSource.readyState === EventSource.CONNECTING) {
+        console.warn('SSE connection timeout, closing connection');
+        eventSource.close();
+        setError('Connection timeout. Please try again.');
+      }
+    }, 10000); // 10 second timeout
+
     eventSource.onopen = () => {
+      console.log('SSE connection opened successfully');
+      clearTimeout(timeout);
       setStreamConnected(true);
     };
 
@@ -273,8 +287,37 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
             ));
             break;
             
+          case 'decision_finalized':
+            // Handle decision_finalized event from backend
+            console.log('Received decision_finalized:', data);
+            if (data.assessment) {
+              const mappedAssessment = {
+                riskScore: data.assessment.decision?.riskScore || 0,
+                riskLevel: data.assessment.decision?.riskLevel || 'low',
+                confidence: data.assessment.decision?.confidence || 0,
+                recommendation: data.assessment.decision?.recommendation || 'monitor',
+                signals: data.assessment.riskSignals?.signals || [],
+                reasoning: data.assessment.decision?.reasoning || []
+              };
+              console.log('Mapped assessment:', mappedAssessment);
+              setAssessment(mappedAssessment);
+              setIsRunning(false);
+            }
+            break;
+            
           case 'session_completed':
-            setAssessment(data.assessment);
+            // Map backend assessment structure to frontend structure
+            if (data.assessment) {
+              const mappedAssessment = {
+                riskScore: data.assessment.decision?.riskScore || 0,
+                riskLevel: data.assessment.decision?.riskLevel || 'low',
+                confidence: data.assessment.decision?.confidence || 0,
+                recommendation: data.assessment.decision?.recommendation || 'monitor',
+                signals: data.assessment.riskSignals?.signals || [],
+                reasoning: data.assessment.decision?.reasoning || []
+              };
+              setAssessment(mappedAssessment);
+            }
             setIsRunning(false);
             eventSource.close();
             break;
@@ -296,8 +339,73 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
 
     eventSource.onerror = (err) => {
       console.error('SSE error:', err);
+      console.error('SSE connection failed for sessionId:', sessionId);
+      console.error('SSE URL:', `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/triage/stream/${sessionId}?X-API-Key=dev_key_789`);
       setStreamConnected(false);
-      setError('Connection lost');
+      
+      // Check if the connection was closed or if there's a network error
+      if (eventSource.readyState === EventSource.CLOSED) {
+        console.log('SSE connection was closed');
+        // Fallback: Try to get session status via regular API call
+        setTimeout(() => {
+          console.log('Attempting fallback API call for session status...');
+          apiService.getTriageSession(sessionId)
+            .then(session => {
+              if (session && session.assessment) {
+                console.log('Fallback successful, got session data:', session);
+                const mappedAssessment = {
+                  riskScore: session.assessment.decision?.riskScore || 0,
+                  riskLevel: session.assessment.decision?.riskLevel || 'low',
+                  confidence: session.assessment.decision?.confidence || 0,
+                  recommendation: session.assessment.decision?.recommendation || 'monitor',
+                  signals: session.assessment.riskSignals?.signals || [],
+                  reasoning: session.assessment.decision?.reasoning || []
+                };
+                setAssessment(mappedAssessment);
+                setIsRunning(false);
+              } else {
+                console.log('Fallback failed, no session data available');
+                setError('Unable to get session status. Please try again.');
+              }
+            })
+            .catch(fallbackErr => {
+              console.error('Fallback API call failed:', fallbackErr);
+              setError('Connection failed and fallback unavailable. Please try again.');
+            });
+        }, 2000); // Wait 2 seconds before trying fallback
+      } else if (eventSource.readyState === EventSource.CONNECTING) {
+        console.log('SSE connection is retrying...');
+      }
+      
+      // Only show error if we're still running and don't have an assessment
+      if (isRunning && !assessment) {
+        setError('Connection lost. Please try again.');
+        // Try to get the session status as a fallback
+        setTimeout(() => {
+          if (sessionId && isRunning && !assessment) {
+            console.log('Attempting fallback: getting session status for', sessionId);
+            apiService.getTriageSession(sessionId)
+              .then((sessionData) => {
+                if (sessionData && sessionData.assessment) {
+                  console.log('Fallback successful: got assessment from session status');
+                  const mappedAssessment = {
+                    riskScore: sessionData.assessment.decision?.riskScore || 0,
+                    riskLevel: sessionData.assessment.decision?.riskLevel || 'low',
+                    confidence: sessionData.assessment.decision?.confidence || 0,
+                    recommendation: sessionData.assessment.decision?.recommendation || 'monitor',
+                    signals: sessionData.assessment.riskSignals?.signals || [],
+                    reasoning: sessionData.assessment.decision?.reasoning || []
+                  };
+                  setAssessment(mappedAssessment);
+                  setIsRunning(false);
+                }
+              })
+              .catch((fallbackError) => {
+                console.error('Fallback also failed:', fallbackError);
+              });
+          }
+        }, 2000); // Wait 2 seconds before trying fallback
+      }
     };
   };
 
@@ -555,34 +663,38 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                 Risk Assessment
               </Typography>
               
-              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+              <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
                 <Chip
-                  label={`Score: ${assessment.riskScore}`}
-                  color={getRiskColor(assessment.riskLevel)}
+                  label={`Triage Score: ${Math.round(((assessment?.riskScore || 0) * 100))}`}
+                  color={getRiskColor(assessment?.riskLevel || 'low')}
                   variant="outlined"
                 />
                 <Chip
-                  label={assessment.riskLevel.toUpperCase()}
-                  color={getRiskColor(assessment.riskLevel)}
+                  label={`Level: ${(assessment?.riskLevel || 'unknown').toUpperCase()}`}
+                  color={getRiskColor(assessment?.riskLevel || 'low')}
                 />
                 <Chip
-                  label={`Confidence: ${Math.round(assessment.confidence * 100)}%`}
+                  label={`Confidence: ${Math.round((assessment?.confidence || 0) * 100)}%`}
                   color="info"
                   variant="outlined"
                 />
               </Box>
-
-              <Typography variant="subtitle2" gutterBottom>
-                Recommendation: {assessment.recommendation.toUpperCase()}
+              
+              <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                * Triage analysis provides detailed AI-based risk assessment vs. initial screening
               </Typography>
 
-              {assessment.reasoning.length > 0 && (
+              <Typography variant="subtitle2" gutterBottom>
+                Recommendation: {(assessment?.recommendation || 'No recommendation').toUpperCase()}
+              </Typography>
+
+              {(assessment?.reasoning || []).length > 0 && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Reasoning:
                   </Typography>
                   <List dense>
-                    {assessment.reasoning.map((reason, index) => (
+                    {(assessment?.reasoning || []).map((reason, index) => (
                       <ListItem key={index}>
                         <ListItemIcon>
                           <Info color="info" />
@@ -604,7 +716,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                 Risk Signals
               </Typography>
               <List dense>
-                {assessment.signals.map((signal, index) => (
+                {(assessment?.signals || []).map((signal, index) => (
                   <ListItem key={index}>
                     <ListItemIcon>
                       {getSignalIcon(signal.type)}
@@ -681,7 +793,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
               variant="contained"
               color="error"
               startIcon={<Block />}
-              disabled={assessment.recommendation !== 'block' || actionLoading === 'freeze' || rateLimited}
+              disabled={assessment?.recommendation !== 'block' || actionLoading === 'freeze' || rateLimited}
               onClick={() => handleAction('freeze')}
             >
               {actionLoading === 'freeze' ? <CircularProgress size={20} /> : 
@@ -691,7 +803,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
               variant="contained"
               color="warning"
               startIcon={<Gavel />}
-              disabled={assessment.riskLevel === 'low' || actionLoading === 'dispute' || rateLimited}
+              disabled={assessment?.riskLevel === 'low' || actionLoading === 'dispute' || rateLimited}
               onClick={() => handleAction('dispute')}
             >
               {actionLoading === 'dispute' ? <CircularProgress size={20} /> : 

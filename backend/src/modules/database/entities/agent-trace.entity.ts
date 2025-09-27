@@ -5,15 +5,24 @@ export class AgentTrace {
   @PrimaryColumn()
   id: string;
 
-  @Column()
+  @Column({ name: 'session_id' })
   sessionId: string;
 
-  @Column({ nullable: true })
+  @Column({ name: 'customer_id' })
+  customerId: string;
+
+  @Column({ name: 'transaction_id', nullable: true })
   transactionId: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ name: 'trace_data', type: 'jsonb' })
   traceData: any;
 
-  @CreateDateColumn()
+  @Column({ name: 'status', type: 'enum', enum: ['idle', 'running', 'completed', 'failed'] })
+  status: string;
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @Column({ name: 'completed_at', nullable: true })
+  completedAt: Date;
 }

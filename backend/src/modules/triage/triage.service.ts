@@ -8,6 +8,7 @@ import { secureLogger } from '../../utils/logger';
 @Injectable()
 export class TriageService {
   private readonly activeSessions = new Map<string, any>();
+  private readonly sseConnections = new Map<string, any>();
 
   constructor(
     private readonly databaseService: DatabaseService,
@@ -114,10 +115,43 @@ export class TriageService {
     }
   }
 
+  // SSE Connection Management
+  addSSEConnection(sessionId: string, response: any): void {
+    this.sseConnections.set(sessionId, response);
+    secureLogger.info('SSE connection added', { sessionId });
+  }
+
+  removeSSEConnection(sessionId: string): void {
+    this.sseConnections.delete(sessionId);
+    secureLogger.info('SSE connection removed', { sessionId });
+  }
+
   private emitSSEEvent(sessionId: string, eventType: string, data: any) {
-    // This would be connected to the SSE stream in the controller
-    secureLogger.info('SSE Event emitted', { sessionId, eventType, data });
-    // In a real implementation, this would emit to the SSE connection
+    const connection = this.sseConnections.get(sessionId);
+    if (connection && !connection.destroyed) {
+      try {
+        const eventData = {
+          type: eventType,
+          data,
+          timestamp: new Date().toISOString()
+        };
+        connection.write(`data: ${JSON.stringify(eventData)}\n\n`);
+        secureLogger.info('SSE Event emitted', { 
+          sessionId, 
+          eventType, 
+          masked: true 
+        });
+      } catch (error) {
+        secureLogger.error('Failed to emit SSE event', { 
+          sessionId, 
+          eventType, 
+          error: error.message 
+        });
+        this.removeSSEConnection(sessionId);
+      }
+    } else {
+      secureLogger.warn('No SSE connection found for session', { sessionId });
+    }
   }
 
   async getSessionStatus(sessionId: string): Promise<any> {

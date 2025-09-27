@@ -38,13 +38,11 @@ export interface CustomerProfile {
   id: string
   name: string
   email: string
-  email_masked: string
   phone: string
-  riskScore: number
-  risk_flags: string[]
-  accountStatus: string
-  lastLogin: string
-  totalSpend: number
+  riskFlags: string[]
+  preferences: any
+  createdAt: string
+  updatedAt: string
   transactionCount: number
 }
 
@@ -79,13 +77,21 @@ export interface Transaction {
   currency: string
   timestamp: string
   deviceId: string
-  geo: {
-    lat: number
-    lon: number
-    country: string
-  }
+  deviceInfo: any
+  metadata: any
+  createdAt: string
   status: string
   riskScore?: number
+}
+
+export interface TransactionsResponse {
+  transactions: Transaction[]
+  pagination: {
+    page: number
+    size: number
+    total: number
+    totalPages: number
+  }
 }
 
 export interface EvalResult {
@@ -148,7 +154,7 @@ class ApiService {
     to?: string,
     page: number = 1,
     size: number = 50
-  ): Promise<{ transactions: Transaction[]; total: number; page: number; size: number }> {
+  ): Promise<TransactionsResponse> {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -223,14 +229,38 @@ class ApiService {
   // Action APIs
   async freezeCard(cardId: string, otp?: string, customerId?: string): Promise<any> {
     try {
+      const userRole = localStorage.getItem('userRole') || 'agent'
+      const idempotencyKey = `freeze_${cardId}_${Date.now()}`
+      
+      console.log('Freeze card request:', {
+        cardId,
+        otp,
+        customerId,
+        userRole,
+        idempotencyKey
+      })
+      
       const response = await api.post('/api/actions/freeze-card', {
         cardId,
         otp,
         customerId,
+      }, {
+        headers: {
+          'X-User-Role': userRole,
+          'Idempotency-Key': idempotencyKey,
+        }
       })
+      
+      console.log('Freeze card response:', response.data)
       return response.data
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to freeze card:', error)
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers
+      })
       throw error
     }
   }
