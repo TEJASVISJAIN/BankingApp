@@ -114,7 +114,7 @@ class CustomerService {
           merchant: row.merchant,
           amount: row.amount,
           currency: row.currency,
-          ts: row.ts,
+          ts: row.ts ? new Date(row.ts).toISOString() : null,
           deviceId: row.device_id,
           geo: row.geo,
         })),

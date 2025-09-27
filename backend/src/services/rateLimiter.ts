@@ -1,5 +1,6 @@
 import { secureLogger } from '../utils/logger';
 import { query } from '../utils/database';
+import { rateLimitBlockTotal } from '../routes/metrics';
 
 export interface RateLimitConfig {
   windowMs: number;
@@ -64,6 +65,9 @@ class RateLimiterService {
     if (entry.count >= rateLimitConfig.maxRequests) {
       const resetTime = entry.windowStart + rateLimitConfig.windowMs;
       const retryAfter = Math.ceil((resetTime - now) / 1000);
+
+      // Record rate limit block
+      rateLimitBlockTotal.inc();
 
       secureLogger.warn('Rate limit exceeded', {
         key,

@@ -19,20 +19,75 @@ router.post('/', apiKeyAuth, async (req: Request, res: Response) => {
       });
     }
 
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     secureLogger.info('Triage request received', {
       customerId,
       transactionId,
-      sessionId: req.headers['x-session-id'] as string,
+      sessionId,
     });
 
-    // Start the triage process
-    const result = await agentOrchestrator.triageTransaction({
-      customerId,
-      transactionId,
-      sessionId: req.headers['x-session-id'] as string,
+    // Return session ID immediately for SSE connection
+    res.json({
+      sessionId,
+      status: 'started',
+      message: 'Triage assessment started. Connect to SSE stream for real-time updates.',
     });
 
-    res.json(result);
+    // Start the triage process asynchronously
+    setImmediate(async () => {
+      try {
+        secureLogger.info('Starting triage pipeline execution', {
+          sessionId,
+          customerId,
+          transactionId,
+        });
+
+        const result = await agentOrchestrator.triageTransaction({
+          customerId,
+          transactionId,
+          sessionId,
+        });
+
+        secureLogger.info('Triage pipeline completed successfully', {
+          sessionId,
+          status: result.status,
+        });
+
+        // Send final result via SSE if connection exists
+        const connection = activeConnections.get(sessionId);
+        if (connection) {
+          connection.write(`data: ${JSON.stringify({
+            type: 'assessment_complete',
+            sessionId,
+            assessment: result,
+            timestamp: new Date().toISOString(),
+          })}\n\n`);
+          connection.end();
+          activeConnections.delete(sessionId);
+        }
+      } catch (error) {
+        secureLogger.error('Triage assessment failed', {
+          sessionId,
+          customerId,
+          transactionId,
+          error: (error as Error).message,
+          stack: (error as Error).stack,
+        });
+
+        const connection = activeConnections.get(sessionId);
+        if (connection) {
+          connection.write(`data: ${JSON.stringify({
+            type: 'assessment_error',
+            sessionId,
+            error: (error as Error).message,
+            timestamp: new Date().toISOString(),
+          })}\n\n`);
+          connection.end();
+          activeConnections.delete(sessionId);
+        }
+      }
+    });
   } catch (error) {
     secureLogger.error('Triage request failed', {
       error: (error as Error).message,
@@ -48,6 +103,11 @@ router.post('/', apiKeyAuth, async (req: Request, res: Response) => {
 // GET /api/triage/stream/:sessionId - SSE stream for real-time updates
 router.get('/stream/:sessionId', apiKeyAuth, (req: Request, res: Response) => {
   const { sessionId } = req.params;
+  
+  secureLogger.info('SSE stream request received', {
+    sessionId,
+    headers: req.headers,
+  });
 
   // Set SSE headers
   res.writeHead(200, {

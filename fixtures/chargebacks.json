@@ -1,0 +1,103 @@
+[
+  {
+    "id": "cb_001",
+    "customerId": "cust_002",
+    "transactionId": "txn_chargeback_001",
+    "amount": 15000,
+    "currency": "INR",
+    "reason": "10.4",
+    "reasonDescription": "Unauthorized transaction",
+    "status": "approved",
+    "merchant": "Suspicious Store",
+    "mcc": "5411",
+    "disputeDate": "2025-01-10T14:30:00Z",
+    "resolutionDate": "2025-01-15T10:00:00Z",
+    "resolution": "Chargeback approved - merchant failed to respond",
+    "evidence": {
+      "customerStatement": "I did not make this transaction",
+      "locationMismatch": true,
+      "deviceChange": true
+    }
+  },
+  {
+    "id": "cb_002", 
+    "customerId": "cust_004",
+    "transactionId": "txn_chargeback_002",
+    "amount": 25000,
+    "currency": "INR",
+    "reason": "10.5",
+    "reasonDescription": "Duplicate transaction",
+    "status": "approved",
+    "merchant": "Online Store",
+    "mcc": "5999",
+    "disputeDate": "2025-01-08T09:15:00Z",
+    "resolutionDate": "2025-01-12T16:45:00Z",
+    "resolution": "Chargeback approved - duplicate charge confirmed",
+    "evidence": {
+      "duplicateTransaction": "txn_duplicate_001",
+      "timeDifference": "2 minutes",
+      "sameAmount": true
+    }
+  },
+  {
+    "id": "cb_003",
+    "customerId": "cust_001", 
+    "transactionId": "txn_chargeback_003",
+    "amount": 5000,
+    "currency": "INR",
+    "reason": "10.6",
+    "reasonDescription": "Product not received",
+    "status": "pending",
+    "merchant": "E-commerce Site",
+    "mcc": "5999",
+    "disputeDate": "2025-01-20T11:30:00Z",
+    "resolutionDate": null,
+    "resolution": null,
+    "evidence": {
+      "orderNumber": "ORD-12345",
+      "expectedDelivery": "2025-01-15",
+      "trackingStatus": "not_shipped"
+    }
+  },
+  {
+    "id": "cb_004",
+    "customerId": "cust_003",
+    "transactionId": "txn_chargeback_004", 
+    "amount": 8000,
+    "currency": "INR",
+    "reason": "10.4",
+    "reasonDescription": "Unauthorized transaction",
+    "status": "denied",
+    "merchant": "Gas Station",
+    "mcc": "5541",
+    "disputeDate": "2025-01-05T16:20:00Z",
+    "resolutionDate": "2025-01-10T14:00:00Z",
+    "resolution": "Chargeback denied - customer made transaction",
+    "evidence": {
+      "customerStatement": "I made this transaction",
+      "locationMatch": true,
+      "deviceMatch": true,
+      "otpVerified": true
+    }
+  },
+  {
+    "id": "cb_005",
+    "customerId": "cust_005",
+    "transactionId": "txn_chargeback_005",
+    "amount": 12000,
+    "currency": "INR", 
+    "reason": "10.7",
+    "reasonDescription": "Processing error",
+    "status": "approved",
+    "merchant": "Restaurant",
+    "mcc": "5812",
+    "disputeDate": "2025-01-12T19:45:00Z",
+    "resolutionDate": "2025-01-18T12:30:00Z",
+    "resolution": "Chargeback approved - merchant processing error",
+    "evidence": {
+      "processingError": "Double charge due to system error",
+      "merchantAdmission": true,
+      "refundIssued": true
+    }
+  }
+]

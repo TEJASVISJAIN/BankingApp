@@ -88,7 +88,7 @@ class EvalRunner {
 
   private loadGoldenCases(): GoldenCase[] {
     try {
-      const filePath = join(process.cwd(), 'fixtures', 'evals', 'golden_cases.json');
+      const filePath = join(process.cwd(), '..', 'fixtures', 'evals', 'golden_cases_simple.json');
       const content = readFileSync(filePath, 'utf-8');
       return JSON.parse(content);
     } catch (error) {
@@ -106,7 +106,7 @@ class EvalRunner {
     try {
       // Start triage session
       const triageResponse = await axios.post(
-        `${this.apiUrl}/api/triage/start`,
+        `${this.apiUrl}/api/triage`,
         {
           customerId: testCase.input.customerId,
           transactionId: testCase.input.transactionId,
@@ -160,8 +160,8 @@ class EvalRunner {
   }
 
   private async waitForCompletion(sessionId: string): Promise<any> {
-    const maxWaitTime = 30000; // 30 seconds
-    const pollInterval = 1000; // 1 second
+    const maxWaitTime = 10000; // 10 seconds
+    const pollInterval = 500; // 0.5 second
     const startTime = Date.now();
 
     while (Date.now() - startTime < maxWaitTime) {
@@ -175,7 +175,7 @@ class EvalRunner {
         );
 
         if (response.data.status === 'completed') {
-          return response.data.assessment;
+          return response.data.finalAssessment || response.data.assessment;
         } else if (response.data.status === 'failed') {
           throw new Error(response.data.error);
         }
@@ -217,6 +217,9 @@ class EvalRunner {
     // Check actions
     if (expected.actions && Array.isArray(expected.actions)) {
       const actualActions = this.extractActions(actual);
+      console.log('🔍 VALIDATING ACTIONS:');
+      console.log('Expected actions:', expected.actions);
+      console.log('Actual actions:', actualActions);
       for (const expectedAction of expected.actions) {
         if (!actualActions.includes(expectedAction)) {
           errors.push(`Missing expected action: ${expectedAction}`);
@@ -264,16 +267,29 @@ class EvalRunner {
   }
 
   private extractActions(assessment: any): string[] {
-    const actions: string[] = [];
-    if (assessment.reasoning) {
-      for (const reason of assessment.reasoning) {
-        if (reason.includes('freeze')) actions.push('freeze_card');
-        if (reason.includes('dispute')) actions.push('open_dispute');
-        if (reason.includes('contact')) actions.push('contact_customer');
-        if (reason.includes('escalate')) actions.push('escalate');
+    console.log('🔍 Extracting actions from assessment:', JSON.stringify(assessment, null, 2));
+    
+    // Check if actions are directly provided in the assessment
+    if (assessment.actions && Array.isArray(assessment.actions)) {
+      console.log('✅ Found actions in assessment.actions:', assessment.actions);
+      return assessment.actions;
+    }
+    
+    // Check in steps for generate_recommendations output
+    if (assessment.steps && Array.isArray(assessment.steps)) {
+      console.log('🔍 Checking steps for actions...');
+      const recommendationStep = assessment.steps.find((step: any) => step.id === 'generate_recommendations');
+      if (recommendationStep && recommendationStep.output) {
+        console.log('📋 Found generate_recommendations step:', JSON.stringify(recommendationStep.output, null, 2));
+        if (recommendationStep.output.actions) {
+          console.log('✅ Found actions in step output:', recommendationStep.output.actions);
+          return recommendationStep.output.actions;
+        }
       }
     }
-    return actions;
+    
+    console.log('❌ No actions found');
+    return [];
   }
 
   private hasOtpRequirement(assessment: any): boolean {

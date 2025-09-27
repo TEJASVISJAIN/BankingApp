@@ -1,0 +1,162 @@
+[
+  {
+    "id": "dev_01",
+    "customerId": "cust_001",
+    "deviceType": "mobile",
+    "os": "Android",
+    "osVersion": "13",
+    "appVersion": "2.1.4",
+    "deviceFingerprint": "fp_android_001",
+    "firstSeen": "2024-06-01T10:00:00Z",
+    "lastSeen": "2025-01-15T14:30:00Z",
+    "isActive": true,
+    "trustScore": 0.95,
+    "location": {
+      "lat": 28.61,
+      "lon": 77.21,
+      "country": "IN",
+      "city": "Delhi"
+    },
+    "riskFlags": []
+  },
+  {
+    "id": "dev_02",
+    "customerId": "cust_002", 
+    "deviceType": "mobile",
+    "os": "iOS",
+    "osVersion": "17.2",
+    "appVersion": "2.1.4",
+    "deviceFingerprint": "fp_ios_002",
+    "firstSeen": "2024-08-15T09:30:00Z",
+    "lastSeen": "2025-01-14T16:45:00Z",
+    "isActive": true,
+    "trustScore": 0.88,
+    "location": {
+      "lat": 19.07,
+      "lon": 72.87,
+      "country": "IN",
+      "city": "Mumbai"
+    },
+    "riskFlags": ["new_device"]
+  },
+  {
+    "id": "dev_03",
+    "customerId": "cust_003",
+    "deviceType": "desktop",
+    "os": "Windows",
+    "osVersion": "11",
+    "appVersion": "1.8.2",
+    "deviceFingerprint": "fp_windows_003",
+    "firstSeen": "2024-03-10T14:20:00Z",
+    "lastSeen": "2025-01-13T11:15:00Z",
+    "isActive": true,
+    "trustScore": 0.92,
+    "location": {
+      "lat": 12.97,
+      "lon": 77.59,
+      "country": "IN",
+      "city": "Bangalore"
+    },
+    "riskFlags": []
+  },
+  {
+    "id": "dev_04",
+    "customerId": "cust_004",
+    "deviceType": "tablet",
+    "os": "Android",
+    "osVersion": "12",
+    "appVersion": "2.0.1",
+    "deviceFingerprint": "fp_android_004",
+    "firstSeen": "2024-09-05T16:45:00Z",
+    "lastSeen": "2025-01-12T08:30:00Z",
+    "isActive": true,
+    "trustScore": 0.78,
+    "location": {
+      "lat": 22.57,
+      "lon": 88.36,
+      "country": "IN",
+      "city": "Kolkata"
+    },
+    "riskFlags": ["location_change"]
+  },
+  {
+    "id": "dev_05",
+    "customerId": "cust_005",
+    "deviceType": "mobile",
+    "os": "Android",
+    "osVersion": "14",
+    "appVersion": "2.1.4",
+    "deviceFingerprint": "fp_android_005",
+    "firstSeen": "2024-11-20T12:00:00Z",
+    "lastSeen": "2025-01-10T20:15:00Z",
+    "isActive": true,
+    "trustScore": 0.85,
+    "location": {
+      "lat": 26.85,
+      "lon": 80.95,
+      "country": "IN",
+      "city": "Lucknow"
+    },
+    "riskFlags": []
+  },
+  {
+    "id": "dev_06",
+    "customerId": "cust_001",
+    "deviceType": "mobile",
+    "os": "iOS",
+    "osVersion": "16.6",
+    "appVersion": "2.0.8",
+    "deviceFingerprint": "fp_ios_006",
+    "firstSeen": "2024-12-01T15:30:00Z",
+    "lastSeen": "2025-01-08T10:20:00Z",
+    "isActive": false,
+    "trustScore": 0.45,
+    "location": {
+      "lat": 28.61,
+      "lon": 77.21,
+      "country": "IN",
+      "city": "Delhi"
+    },
+    "riskFlags": ["suspicious_activity", "low_trust_score"]
+  },
+  {
+    "id": "dev_07",
+    "customerId": "cust_002",
+    "deviceType": "desktop",
+    "os": "macOS",
+    "osVersion": "14.1",
+    "appVersion": "1.9.5",
+    "deviceFingerprint": "fp_macos_007",
+    "firstSeen": "2024-07-15T11:45:00Z",
+    "lastSeen": "2025-01-11T13:25:00Z",
+    "isActive": true,
+    "trustScore": 0.91,
+    "location": {
+      "lat": 19.07,
+      "lon": 72.87,
+      "country": "IN",
+      "city": "Mumbai"
+    },
+    "riskFlags": []
+  },
+  {
+    "id": "dev_08",
+    "customerId": "cust_003",
+    "deviceType": "mobile",
+    "os": "Android",
+    "osVersion": "13",
+    "appVersion": "2.1.4",
+    "deviceFingerprint": "fp_android_008",
+    "firstSeen": "2025-01-05T09:15:00Z",
+    "lastSeen": "2025-01-15T17:40:00Z",
+    "isActive": true,
+    "trustScore": 0.65,
+    "location": {
+      "lat": 12.97,
+      "lon": 77.59,
+      "country": "IN",
+      "city": "Bangalore"
+    },
+    "riskFlags": ["new_device", "unusual_location"]
+  }
+]

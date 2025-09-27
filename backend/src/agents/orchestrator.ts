@@ -7,6 +7,7 @@ import { observabilityService } from '../services/observability';
 import { secureLogger } from '../utils/logger';
 import { query } from '../utils/database';
 import { traceService } from '../services/traceService';
+import { toolCallTotal, agentLatencyMs, agentFallbackTotal } from '../routes/metrics';
 
 export interface AgentStep {
   id: string;
@@ -91,8 +92,16 @@ class AgentOrchestrator extends EventEmitter {
       this.activeSessions.set(sessionId, trace);
       this.emit('session_started', { sessionId, trace });
 
-      // Execute the triage pipeline
-      const assessment = await this.executeTriagePipeline(sessionId, request);
+      // Execute the triage pipeline with timeout
+      const triageTimeout = 30000; // 30 seconds
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Triage process timeout')), triageTimeout);
+      });
+
+      const assessment = await Promise.race([
+        this.executeTriagePipeline(sessionId, request),
+        timeoutPromise
+      ]);
 
       // Update trace with final results
       trace.endTime = Date.now();
@@ -110,7 +119,7 @@ class AgentOrchestrator extends EventEmitter {
       // Clean up after a delay
       setTimeout(() => {
         this.activeSessions.delete(sessionId);
-      }, 60000); // Keep for 1 minute for debugging
+      }, 300000); // Keep for 5 minutes for debugging
 
       return {
         sessionId,
@@ -137,7 +146,12 @@ class AgentOrchestrator extends EventEmitter {
 
       secureLogger.error('Triage session failed', {
         sessionId,
+        customerId: request.customerId,
+        transactionId: request.transactionId,
         error: (error as Error).message,
+        stack: (error as Error).stack,
+        errorType: error.constructor.name,
+        errorDetails: JSON.stringify(error),
       });
 
       this.emit('session_failed', { sessionId, error: (error as Error).message });
@@ -153,16 +167,21 @@ class AgentOrchestrator extends EventEmitter {
 
   private async executeTriagePipeline(sessionId: string, request: TriageRequest): Promise<FraudAssessment> {
     const trace = this.activeSessions.get(sessionId);
-    if (!trace) throw new Error('Session not found');
-
-    // Step 1: Get transaction context
-    const contextStep = await this.executeStep(sessionId, 'get_context', 'Get transaction context', async () => {
-      return await this.getTransactionContext(request.transactionId, request.customerId);
-    });
-
-    if (contextStep.status === 'failed') {
-      throw new Error('Failed to get transaction context');
+    if (!trace) {
+      secureLogger.error('Session not found in executeTriagePipeline', { sessionId });
+      throw new Error('Session not found');
     }
+
+    try {
+      // Step 1: Get transaction context
+      const contextStep = await this.executeStep(sessionId, 'get_context', 'Get transaction context', async () => {
+        return await this.getTransactionContext(request.transactionId, request.customerId);
+      });
+
+      if (contextStep.status === 'failed') {
+        secureLogger.error('Context step failed', { sessionId, error: contextStep.error });
+        throw new Error(`Failed to get transaction context: ${contextStep.error}`);
+      }
 
     const context = contextStep.output as TransactionContext;
 
@@ -187,6 +206,8 @@ class AgentOrchestrator extends EventEmitter {
     if (fraudStep.status === 'failed') {
       // Fallback to basic rules
       trace.fallbacks.push('fraud_assessment_failed');
+      agentFallbackTotal.inc({ tool: 'fraud_assessment' });
+      secureLogger.warn('Fraud assessment failed, using fallback', { sessionId });
       return await this.executeFallbackAssessment(context);
     }
 
@@ -220,6 +241,14 @@ class AgentOrchestrator extends EventEmitter {
     }
 
     return assessment;
+    } catch (error) {
+      secureLogger.error('executeTriagePipeline failed', {
+        sessionId,
+        error: (error as Error).message,
+        stack: (error as Error).stack,
+      });
+      throw error;
+    }
   }
 
   private async executeStep(
@@ -229,7 +258,10 @@ class AgentOrchestrator extends EventEmitter {
     operation: () => Promise<any>
   ): Promise<AgentStep> {
     const trace = this.activeSessions.get(sessionId);
-    if (!trace) throw new Error('Session not found');
+    if (!trace) {
+      secureLogger.error('Session not found in executeStep', { sessionId, stepId });
+      throw new Error('Session not found');
+    }
 
     const step: AgentStep = {
       id: stepId,
@@ -243,9 +275,11 @@ class AgentOrchestrator extends EventEmitter {
     this.emit('step_started', { sessionId, step });
 
     try {
+      secureLogger.info('Executing step', { sessionId, stepId, description });
+      
       // Set timeout for the step
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Step timeout')), this.STEP_TIMEOUT);
+        setTimeout(() => reject(new Error(`Step timeout after ${this.STEP_TIMEOUT}ms`)), this.STEP_TIMEOUT);
       });
 
       const result = await Promise.race([operation(), timeoutPromise]);
@@ -254,6 +288,10 @@ class AgentOrchestrator extends EventEmitter {
       step.endTime = Date.now();
       step.duration = step.endTime - step.startTime;
       step.output = result;
+
+      // Record metrics
+      toolCallTotal.inc({ tool: stepId, status: 'ok' });
+      agentLatencyMs.observe(step.duration);
 
       this.emit('step_completed', { sessionId, step, result });
 
@@ -271,6 +309,10 @@ class AgentOrchestrator extends EventEmitter {
       step.duration = step.endTime - step.startTime;
       step.error = (error as Error).message;
 
+      // Record metrics for failed step
+      toolCallTotal.inc({ tool: stepId, status: 'error' });
+      agentLatencyMs.observe(step.duration);
+
       this.emit('step_failed', { sessionId, step, error: (error as Error).message });
 
       secureLogger.error('Agent step failed', {
@@ -278,6 +320,7 @@ class AgentOrchestrator extends EventEmitter {
         stepId,
         duration: step.duration,
         error: (error as Error).message,
+        stack: (error as Error).stack,
       });
 
       return step;
@@ -285,30 +328,62 @@ class AgentOrchestrator extends EventEmitter {
   }
 
   private async getTransactionContext(transactionId: string, customerId: string): Promise<TransactionContext> {
-    const result = await query(`
-      SELECT t.*, c.risk_flags, d.id as device_id, d.device_info as geo
-      FROM transactions t
-      LEFT JOIN customers c ON t.customer_id = c.id
-      LEFT JOIN devices d ON t.device_id = d.id
-      WHERE t.id = $1 AND t.customer_id = $2
-    `, [transactionId, customerId]);
+    try {
+      secureLogger.info('Getting transaction context', { transactionId, customerId });
+      
+      const result = await query(`
+        SELECT t.*, c.risk_flags, d.id as device_id, d.device_info as geo
+        FROM transactions t
+        LEFT JOIN customers c ON t.customer_id = c.id
+        LEFT JOIN devices d ON t.device_id = d.id
+        WHERE t.id = $1 AND t.customer_id = $2
+      `, [transactionId, customerId]);
 
-    if (result.rows.length === 0) {
-      throw new Error('Transaction not found');
+      secureLogger.info('Transaction query result', { 
+        transactionId, 
+        customerId, 
+        rowCount: result.rows.length,
+        query: 'SELECT t.*, c.risk_flags, d.id as device_id, d.device_info as geo FROM transactions t LEFT JOIN customers c ON t.customer_id = c.id LEFT JOIN devices d ON t.device_id = d.id WHERE t.id = $1 AND t.customer_id = $2'
+      });
+
+      if (result.rows.length === 0) {
+        secureLogger.error('Transaction not found in database', { transactionId, customerId });
+        throw new Error('Transaction not found');
+      }
+
+      const row = result.rows[0];
+      secureLogger.info('Raw database row', { row });
+      
+      const context = {
+        transactionId: row.id,
+        customerId: row.customer_id,
+        cardId: row.card_id,
+        amount: row.amount,
+        merchant: row.merchant,
+        mcc: row.mcc,
+        timestamp: new Date(row.ts),
+        deviceId: row.device_id,
+        geo: row.geo ? (typeof row.geo === 'string' ? JSON.parse(row.geo) : row.geo) : undefined,
+      };
+
+      secureLogger.info('Transaction context created successfully', { 
+        context: {
+          transactionId: context.transactionId,
+          customerId: context.customerId,
+          amount: context.amount,
+          merchant: context.merchant
+        }
+      });
+      return context;
+    } catch (error) {
+      secureLogger.error('Failed to get transaction context', {
+        transactionId,
+        customerId,
+        error: (error as Error).message,
+        stack: (error as Error).stack,
+      });
+      throw error;
     }
-
-    const row = result.rows[0];
-    return {
-      transactionId: row.id,
-      customerId: row.customer_id,
-      cardId: row.card_id,
-      amount: row.amount,
-      merchant: row.merchant,
-      mcc: row.mcc,
-      timestamp: new Date(row.ts),
-      deviceId: row.device_id,
-      geo: row.geo ? JSON.parse(row.geo) : undefined,
-    };
   }
 
   private async checkCompliancePolicies(assessment: FraudAssessment, context: TransactionContext): Promise<any> {

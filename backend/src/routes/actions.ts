@@ -3,6 +3,7 @@ import { complianceService } from '../services/complianceService';
 import { secureLogger } from '../utils/logger';
 import { apiKeyAuth } from '../middleware/auth';
 import { query } from '../utils/database';
+import { actionBlockedTotal } from './metrics';
 
 const router = Router();
 
@@ -52,6 +53,8 @@ router.post('/freeze-card', apiKeyAuth, async (req: Request, res: Response) => {
       const otpValidation = await complianceService.validateOtp(customerId, otp, 'freeze_card');
       
       if (!otpValidation.isValid) {
+        // Record action blocked due to invalid OTP
+        actionBlockedTotal.inc({ policy: 'otp_validation' });
         return res.status(400).json({
           status: 'OTP_INVALID',
           message: otpValidation.reason,
@@ -88,17 +91,17 @@ router.post('/freeze-card', apiKeyAuth, async (req: Request, res: Response) => {
 
     // Log the action
     await query(`
-      INSERT INTO actions (customer_id, action_type, card_id, status, session_id, metadata)
-      VALUES ($1, 'freeze_card', $2, 'completed', $3, $4)
+      INSERT INTO actions (customer_id, action_type, action_data, status, session_id)
+      VALUES ($1, 'freeze_card', $2, 'completed', $3)
     `, [
       customerId,
-      cardId,
-      req.headers['x-session-id'] || 'unknown',
       JSON.stringify({
+        cardId,
         compliance,
         otpUsed: compliance.requiresOtp,
         timestamp: new Date().toISOString(),
       }),
+      req.headers['x-session-id'] || 'unknown',
     ]);
 
     secureLogger.info('Card frozen successfully', {
@@ -189,24 +192,24 @@ router.post('/open-dispute', apiKeyAuth, async (req: Request, res: Response) => 
     const caseId = `case_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     await query(`
-      INSERT INTO chargebacks (id, transaction_id, reason_code, status, created_at)
-      VALUES ($1, $2, $3, 'open', NOW())
-    `, [caseId, txnId, reasonCode]);
+      INSERT INTO chargebacks (id, customer_id, transaction_id, amount, reason_code, status, created_at)
+      VALUES ($1, $2, $3, $4, $5, 'open', NOW())
+    `, [caseId, customerId, txnId, amount || 0, reasonCode]);
 
     // Log the action
     await query(`
-      INSERT INTO actions (customer_id, action_type, transaction_id, status, session_id, metadata)
-      VALUES ($1, 'open_dispute', $2, 'completed', $3, $4)
+      INSERT INTO actions (customer_id, action_type, action_data, status, session_id)
+      VALUES ($1, 'open_dispute', $2, 'completed', $3)
     `, [
       customerId,
-      txnId,
-      req.headers['x-session-id'] || 'unknown',
       JSON.stringify({
+        transactionId: txnId,
         caseId,
         reasonCode,
         compliance,
         timestamp: new Date().toISOString(),
       }),
+      req.headers['x-session-id'] || 'unknown',
     ]);
 
     secureLogger.info('Dispute opened successfully', {
@@ -269,11 +272,10 @@ router.post('/contact-customer', apiKeyAuth, async (req: Request, res: Response)
     const contactId = `contact_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     await query(`
-      INSERT INTO actions (customer_id, action_type, status, session_id, metadata)
-      VALUES ($1, 'contact_customer', 'pending', $2, $3)
+      INSERT INTO actions (customer_id, action_type, action_data, status, session_id)
+      VALUES ($1, 'contact_customer', $2, 'pending', $3)
     `, [
       customerId,
-      req.headers['x-session-id'] || 'unknown',
       JSON.stringify({
         contactId,
         method,
@@ -282,6 +284,7 @@ router.post('/contact-customer', apiKeyAuth, async (req: Request, res: Response)
         compliance,
         timestamp: new Date().toISOString(),
       }),
+      req.headers['x-session-id'] || 'unknown',
     ]);
 
     secureLogger.info('Customer contact initiated', {

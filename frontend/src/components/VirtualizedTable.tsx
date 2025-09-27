@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   Table,
-  TableBody,
   TableCell,
   TableContainer,
   TableHead,
@@ -49,7 +48,6 @@ const Row: React.FC<RowProps> = ({ index, style, data }) => {
 
   return (
     <div
-      style={style}
       role="row"
       aria-selected={isSelected}
       tabIndex={0}
@@ -68,13 +66,6 @@ const Row: React.FC<RowProps> = ({ index, style, data }) => {
         display: 'flex',
         alignItems: 'center',
         padding: '0 16px',
-        '&:hover': {
-          backgroundColor: 'rgba(0, 0, 0, 0.04)',
-        },
-        '&:focus': {
-          outline: '2px solid #1976d2',
-          outlineOffset: '-2px',
-        },
       }}
     >
       {columns.map((column) => (
@@ -109,7 +100,6 @@ const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
   'aria-label': ariaLabel,
   'aria-describedby': ariaDescribedBy,
 }) => {
-  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
 
   const itemData = useMemo(() => ({
     items: data,
@@ -201,7 +191,6 @@ const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
           itemSize={48}
           itemData={itemData}
           width={totalWidth}
-          role="table"
           aria-label={`Virtualized table with ${data.length} rows`}
         >
           {Row}

@@ -12,7 +12,7 @@ export const config = {
     database: process.env.DB_NAME || 'aegis_support',
     user: process.env.DB_USER || 'aegis_user',
     password: process.env.DB_PASSWORD || 'aegis_password',
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   },
   
   redis: {

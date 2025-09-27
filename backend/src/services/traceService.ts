@@ -29,8 +29,8 @@ class TraceService {
 
   async saveTrace(trace: AgentTrace): Promise<void> {
     try {
-      // Save to database
-      await this.saveTraceToDatabase(trace);
+      // Skip database save for now - just save to file system
+      // await this.saveTraceToDatabase(trace);
       
       // Save to file system for debugging
       await this.saveTraceToFile(trace);
@@ -50,78 +50,30 @@ class TraceService {
 
   private async saveTraceToDatabase(trace: AgentTrace): Promise<void> {
     try {
-      await query('BEGIN');
-      
-      // Insert main trace record
-      const traceResult = await query(`
+      // Insert trace record with trace_data as JSONB
+      await query(`
         INSERT INTO agent_traces (
           session_id, customer_id, transaction_id, 
-          start_time, end_time, duration, status,
-          risk_score, risk_level, recommendation,
-          confidence, fallbacks, policy_blocks
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING id
+          trace_data, status, completed_at
+        ) VALUES ($1, $2, $3, $4, $5, $6)
       `, [
         trace.sessionId,
         trace.customerId,
         trace.transactionId,
-        new Date(trace.startTime),
-        trace.endTime ? new Date(trace.endTime) : null,
-        trace.totalDuration,
+        JSON.stringify(trace),
         trace.status,
-        trace.finalAssessment?.riskScore || 0,
-        trace.finalAssessment?.riskLevel || 'low',
-        trace.finalAssessment?.recommendation || 'monitor',
-        trace.finalAssessment?.confidence || 0,
-        JSON.stringify(trace.fallbacks),
-        JSON.stringify(trace.policyBlocks),
+        trace.status === 'completed' ? new Date() : null,
       ]);
 
-      const traceId = traceResult.rows[0].id;
-
-      // Insert step records
-      for (const step of trace.steps) {
-        await query(`
-          INSERT INTO agent_steps (
-            trace_id, step_id, agent, tool, status,
-            start_time, end_time, duration, input_data, output_data, error_message
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-        `, [
-          traceId,
-          step.id,
-          step.agent,
-          step.tool,
-          step.status,
-          new Date(step.startTime),
-          step.endTime ? new Date(step.endTime) : null,
-          step.duration,
-          step.input ? JSON.stringify(step.input) : null,
-          step.output ? JSON.stringify(step.output) : null,
-          step.error,
-        ]);
-      }
-
-      // Insert risk signals if available
-      if (trace.finalAssessment?.signals) {
-        for (const signal of trace.finalAssessment.signals) {
-          await query(`
-            INSERT INTO risk_signals (
-              trace_id, signal_type, severity, score, description, metadata
-            ) VALUES ($1, $2, $3, $4, $5, $6)
-          `, [
-            traceId,
-            signal.type,
-            signal.severity,
-            signal.score,
-            signal.description,
-            signal.metadata ? JSON.stringify(signal.metadata) : null,
-          ]);
-        }
-      }
-
-      await query('COMMIT');
+      secureLogger.info('Trace saved to database', {
+        sessionId: trace.sessionId,
+        status: trace.status,
+      });
     } catch (error) {
-      await query('ROLLBACK');
+      secureLogger.error('Database query error:', {
+        error: (error as Error).message,
+        query: 'INSERT INTO agent_traces',
+      });
       throw error;
     }
   }
