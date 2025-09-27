@@ -1,0 +1,342 @@
+{
+  "timestamp": "2025-09-27T10:39:12.739Z",
+  "summary": {
+    "totalCases": 12,
+    "passedCases": 0,
+    "failedCases": 12,
+    "successRate": 0,
+    "fallbackRate": 0,
+    "avgLatency": {
+      "p50": 125,
+      "p95": 198,
+      "p99": 198
+    },
+    "policyDenials": {},
+    "confusionMatrix": {
+      "truePositives": 0,
+      "falsePositives": 0,
+      "trueNegatives": 0,
+      "falseNegatives": 0
+    },
+    "categoryBreakdown": {
+      "card_security": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "fraud_detection": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "false_positive": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "velocity_fraud": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "behavioral_anomaly": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "reputation_based": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "fallback_scenario": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "rate_limiting": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "policy_enforcement": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "pii_redaction": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "knowledge_base": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      },
+      "disambiguation": {
+        "passed": 0,
+        "total": 1,
+        "rate": 0
+      }
+    },
+    "commonFailures": [
+      {
+        "error": "API Error: Triage session timeout",
+        "count": 12
+      }
+    ]
+  },
+  "results": [
+    {
+      "caseId": "eval_001",
+      "name": "Card Lost - Freeze Required",
+      "category": "card_security",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 198,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_002",
+      "name": "Unauthorized Charge - Dispute Required",
+      "category": "fraud_detection",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 120,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_003",
+      "name": "Duplicate Transaction - No Action",
+      "category": "false_positive",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "low",
+        "recommendation": "monitor",
+        "actions": [
+          "monitor"
+        ],
+        "confidence": 0.5
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 126,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_004",
+      "name": "Geo-Velocity Violation",
+      "category": "velocity_fraud",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 119,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_005",
+      "name": "Device Change + MCC Anomaly",
+      "category": "behavioral_anomaly",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 130,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_006",
+      "name": "Heavy Chargeback History",
+      "category": "reputation_based",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "low",
+        "recommendation": "monitor",
+        "actions": [
+          "monitor"
+        ],
+        "confidence": 0.5
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 120,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_007",
+      "name": "Risk Service Timeout - Fallback",
+      "category": "fallback_scenario",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 125,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_008",
+      "name": "Rate Limit - 429 Response",
+      "category": "rate_limiting",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "statusCode": 429,
+        "retryAfterMs": 2000,
+        "rateLimited": true
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 123,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_009",
+      "name": "Policy Block - Unfreeze Without Identity",
+      "category": "policy_enforcement",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "statusCode": 403,
+        "blocked": true,
+        "reason": "identity_verification_required"
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 125,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_010",
+      "name": "PII Message - Redaction Required",
+      "category": "pii_redaction",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 128,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_011",
+      "name": "KB FAQ - Travel Notice",
+      "category": "knowledge_base",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 123,
+      "fallbackUsed": false
+    },
+    {
+      "caseId": "eval_012",
+      "name": "Ambiguous Merchant - Disambiguation",
+      "category": "disambiguation",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "riskLevel": "medium",
+        "recommendation": "investigate",
+        "actions": [
+          "monitor",
+          "open_dispute",
+          "request_verification"
+        ],
+        "confidence": 0.7
+      },
+      "errors": [
+        "API Error: Triage session timeout"
+      ],
+      "duration": 123,
+      "fallbackUsed": false
+    }
+  ]
+}

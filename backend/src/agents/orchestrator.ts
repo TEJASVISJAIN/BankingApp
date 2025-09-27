@@ -156,6 +156,9 @@ class AgentOrchestrator extends EventEmitter {
 
       this.emit('session_failed', { sessionId, error: (error as Error).message });
 
+      // Clean up failed session immediately
+      this.activeSessions.delete(sessionId);
+
       return {
         sessionId,
         status: 'failed',

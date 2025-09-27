@@ -103,6 +103,9 @@ class EvalRunner {
     let actual: any = null;
     let fallbackUsed = false;
 
+    // Add a delay to prevent overwhelming the system
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     try {
       // Start triage session
       const triageResponse = await axios.post(
@@ -175,7 +178,7 @@ class EvalRunner {
         );
 
         if (response.data.status === 'completed') {
-          return response.data.finalAssessment || response.data.assessment;
+          return response.data; // Return full response data, not just finalAssessment
         } else if (response.data.status === 'failed') {
           throw new Error(response.data.error);
         }
@@ -199,27 +202,33 @@ class EvalRunner {
       return;
     }
 
+    // Extract the finalAssessment from the response data
+    const assessment = actual.finalAssessment || actual.assessment;
+    if (!assessment) {
+      errors.push('No final assessment found');
+      return;
+    }
+
     // Check risk level
-    if (expected.riskLevel && actual.riskLevel !== expected.riskLevel) {
-      errors.push(`Risk level mismatch: expected ${expected.riskLevel}, got ${actual.riskLevel}`);
+    if (expected.riskLevel && assessment.riskLevel !== expected.riskLevel) {
+      errors.push(`Risk level mismatch: expected ${expected.riskLevel}, got ${assessment.riskLevel}`);
     }
 
     // Check recommendation
-    if (expected.recommendation && actual.recommendation !== expected.recommendation) {
-      errors.push(`Recommendation mismatch: expected ${expected.recommendation}, got ${actual.recommendation}`);
+    if (expected.recommendation && assessment.recommendation !== expected.recommendation) {
+      errors.push(`Recommendation mismatch: expected ${expected.recommendation}, got ${assessment.recommendation}`);
     }
 
     // Check confidence (with tolerance)
-    if (expected.confidence && Math.abs(actual.confidence - expected.confidence) > 0.1) {
-      errors.push(`Confidence mismatch: expected ${expected.confidence}, got ${actual.confidence}`);
+    if (expected.confidence && Math.abs(assessment.confidence - expected.confidence) > 0.1) {
+      errors.push(`Confidence mismatch: expected ${expected.confidence}, got ${assessment.confidence}`);
     }
 
     // Check actions
     if (expected.actions && Array.isArray(expected.actions)) {
+      // Pass the full response data to extractActions
       const actualActions = this.extractActions(actual);
-      console.log('🔍 VALIDATING ACTIONS:');
-      console.log('Expected actions:', expected.actions);
-      console.log('Actual actions:', actualActions);
+      
       for (const expectedAction of expected.actions) {
         if (!actualActions.includes(expectedAction)) {
           errors.push(`Missing expected action: ${expectedAction}`);
