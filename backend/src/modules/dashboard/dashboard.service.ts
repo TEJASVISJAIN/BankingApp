@@ -73,9 +73,14 @@ export class DashboardService {
         .getMany();
 
       // Transform to fraud triage format
-      const fraudTriage = highRiskTransactions.map((txn, index) => {
+      const fraudTriage = await Promise.all(highRiskTransactions.map(async (txn, index) => {
         const riskLevel = this.calculateRiskLevel(txn.amount);
         const riskScore = this.calculateRiskScore(txn.amount, riskLevel);
+        
+        // Get transaction count for this customer
+        const transactionCount = await this.transactionRepository.count({
+          where: { customerId: txn.customerId }
+        });
         
         return {
           id: `alert_${txn.id}`,
@@ -90,8 +95,9 @@ export class DashboardService {
           status: this.getRandomStatus(),
           lastFour: '****', // We'll get this from card lookup if needed
           location: txn.geo?.city || 'Unknown',
+          transactionCount: transactionCount,
         };
-      });
+      }));
 
       return fraudTriage;
     } catch (error) {

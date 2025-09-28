@@ -542,8 +542,22 @@ export class AgentOrchestratorService extends EventEmitter {
         currentTransaction: currentTransaction ? { id: currentTransaction.id, amount: currentTransaction.amount } : null
       });
       
+      // Get card status for current transaction
+      let cardStatus = 'active';
+      if (currentTransaction) {
+        try {
+          const card = await this.databaseService.findCardById(currentTransaction.cardId);
+          cardStatus = card?.status || 'active';
+        } catch (error) {
+          secureLogger.warn('Failed to get card status', { cardId: currentTransaction.cardId, error: error.message });
+        }
+      }
+      
       return {
-        current: currentTransaction,
+        current: currentTransaction ? {
+          ...currentTransaction,
+          cardStatus
+        } : null,
         recent: transactions.slice(0, 10),
         total: transactions.length,
         summary: {

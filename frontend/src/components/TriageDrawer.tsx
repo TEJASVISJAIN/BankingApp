@@ -73,6 +73,13 @@ interface FraudAssessment {
   recommendation: 'monitor' | 'investigate' | 'block';
   confidence: number;
   reasoning: string[];
+  transaction?: {
+    id: string;
+    cardId: string;
+    amount: number;
+    merchant: string;
+    cardStatus?: string;
+  };
 }
 
 interface TriageDrawerProps {
@@ -297,7 +304,14 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                 confidence: data.assessment.decision?.confidence || 0,
                 recommendation: data.assessment.decision?.recommendation || 'monitor',
                 signals: data.assessment.riskSignals?.signals || [],
-                reasoning: data.assessment.decision?.reasoning || []
+                reasoning: data.assessment.decision?.reasoning || [],
+                transaction: data.assessment.transactions?.current ? {
+                  id: data.assessment.transactions.current.id,
+                  cardId: data.assessment.transactions.current.cardId,
+                  amount: data.assessment.transactions.current.amount,
+                  merchant: data.assessment.transactions.current.merchant,
+                  cardStatus: data.assessment.transactions.current.cardStatus || 'active'
+                } : undefined
               };
               console.log('Mapped assessment:', mappedAssessment);
               setAssessment(mappedAssessment);
@@ -314,7 +328,14 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                 confidence: data.assessment.decision?.confidence || 0,
                 recommendation: data.assessment.decision?.recommendation || 'monitor',
                 signals: data.assessment.riskSignals?.signals || [],
-                reasoning: data.assessment.decision?.reasoning || []
+                reasoning: data.assessment.decision?.reasoning || [],
+                transaction: data.assessment.transactions?.current ? {
+                  id: data.assessment.transactions.current.id,
+                  cardId: data.assessment.transactions.current.cardId,
+                  amount: data.assessment.transactions.current.amount,
+                  merchant: data.assessment.transactions.current.merchant,
+                  cardStatus: data.assessment.transactions.current.cardStatus || 'active'
+                } : undefined
               };
               setAssessment(mappedAssessment);
             }
@@ -359,7 +380,13 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                   confidence: session.assessment.decision?.confidence || 0,
                   recommendation: session.assessment.decision?.recommendation || 'monitor',
                   signals: session.assessment.riskSignals?.signals || [],
-                  reasoning: session.assessment.decision?.reasoning || []
+                  reasoning: session.assessment.decision?.reasoning || [],
+                  transaction: session.assessment.transactions?.current ? {
+                    id: session.assessment.transactions.current.id,
+                    cardId: session.assessment.transactions.current.cardId,
+                    amount: session.assessment.transactions.current.amount,
+                    merchant: session.assessment.transactions.current.merchant
+                  } : undefined
                 };
                 setAssessment(mappedAssessment);
                 setIsRunning(false);
@@ -394,7 +421,13 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                     confidence: sessionData.assessment.decision?.confidence || 0,
                     recommendation: sessionData.assessment.decision?.recommendation || 'monitor',
                     signals: sessionData.assessment.riskSignals?.signals || [],
-                    reasoning: sessionData.assessment.decision?.reasoning || []
+                    reasoning: sessionData.assessment.decision?.reasoning || [],
+                    transaction: sessionData.assessment.transactions?.current ? {
+                      id: sessionData.assessment.transactions.current.id,
+                      cardId: sessionData.assessment.transactions.current.cardId,
+                      amount: sessionData.assessment.transactions.current.amount,
+                      merchant: sessionData.assessment.transactions.current.merchant
+                    } : undefined
                   };
                   setAssessment(mappedAssessment);
                   setIsRunning(false);
@@ -500,6 +533,17 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
   const handleActionConfirm = async () => {
     if (!actionDialog.type) return;
 
+    // Check if OTP is required for freeze action
+    if (actionDialog.type === 'freeze') {
+      const userRole = localStorage.getItem('userRole') || 'agent';
+      if (userRole === 'agent') {
+        // Show OTP dialog for agents
+        setActionDialog({ open: false, type: null, title: '', description: '' });
+        setOtpDialog({ open: true, action: 'freeze', otp: '', loading: false });
+        return;
+      }
+    }
+
     setActionLoading(actionDialog.type);
     
     try {
@@ -507,8 +551,9 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
       
       switch (actionDialog.type) {
         case 'freeze':
+          const cardId = assessment?.transaction?.cardId || 'card_001'; // Fallback to default if not available
           response = await apiService.freezeCard(
-            'card_001', // This should come from the transaction data
+            cardId,
             undefined,
             customerId
           );
@@ -573,30 +618,64 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
     setOtpDialog(prev => ({ ...prev, loading: true }));
     
     try {
-      const response = await apiService.validateOtp({
-        customerId,
-        action: otpDialog.action,
-        otp: otpDialog.otp,
-      });
-
-      if (response.isValid) {
-        setSnackbar({
-          open: true,
-          message: 'OTP validated successfully',
-          severity: 'success',
-        });
-        setOtpDialog({ open: false, action: '', otp: '', loading: false });
+      let response;
+      
+      if (otpDialog.action === 'freeze') {
+        // Perform freeze action with OTP
+        const cardId = assessment?.transaction?.cardId || 'card_001';
+        response = await apiService.freezeCard(
+          cardId,
+          otpDialog.otp,
+          customerId
+        );
+        
+        if (response.result?.status === 'FROZEN') {
+          setSnackbar({
+            open: true,
+            message: 'Card frozen successfully',
+            severity: 'success',
+          });
+          setOtpDialog({ open: false, action: '', otp: '', loading: false });
+        } else if (response.result?.status === 'PENDING_OTP') {
+          setSnackbar({
+            open: true,
+            message: 'Invalid OTP. Please try again.',
+            severity: 'error',
+          });
+        } else {
+          setSnackbar({
+            open: true,
+            message: 'Failed to freeze card',
+            severity: 'error',
+          });
+        }
       } else {
-        setSnackbar({
-          open: true,
-          message: response.reason || 'Invalid OTP',
-          severity: 'error',
+        // Handle other OTP actions
+        const otpResponse = await apiService.validateOtp({
+          customerId,
+          action: otpDialog.action,
+          otp: otpDialog.otp,
         });
+
+        if (otpResponse.isValid) {
+          setSnackbar({
+            open: true,
+            message: 'OTP validated successfully',
+            severity: 'success',
+          });
+          setOtpDialog({ open: false, action: '', otp: '', loading: false });
+        } else {
+          setSnackbar({
+            open: true,
+            message: otpResponse.reason || 'Invalid OTP',
+            severity: 'error',
+          });
+        }
       }
     } catch (error) {
       setSnackbar({
         open: true,
-        message: 'OTP validation failed',
+        message: 'Action failed',
         severity: 'error',
       });
     } finally {
@@ -793,17 +872,23 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
               variant="contained"
               color="error"
               startIcon={<Block />}
-              disabled={assessment?.recommendation !== 'block' || actionLoading === 'freeze' || rateLimited}
+              disabled={
+                (assessment?.recommendation !== 'block' && assessment?.recommendation !== 'investigate') || 
+                actionLoading === 'freeze' || 
+                rateLimited ||
+                assessment?.transaction?.cardStatus === 'frozen'
+              }
               onClick={() => handleAction('freeze')}
             >
               {actionLoading === 'freeze' ? <CircularProgress size={20} /> : 
-               rateLimited ? `Try again in ${retryAfter}s` : 'Freeze Card'}
+               rateLimited ? `Try again in ${retryAfter}s` : 
+               assessment?.transaction?.cardStatus === 'frozen' ? 'Card is Frozen' : 'Freeze Card'}
             </Button>
             <Button
               variant="contained"
               color="warning"
               startIcon={<Gavel />}
-              disabled={assessment?.riskLevel === 'low' || actionLoading === 'dispute' || rateLimited}
+              disabled={actionLoading === 'dispute' || rateLimited}
               onClick={() => handleAction('dispute')}
             >
               {actionLoading === 'dispute' ? <CircularProgress size={20} /> : 

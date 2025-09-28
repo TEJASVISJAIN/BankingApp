@@ -508,7 +508,7 @@ export function CustomerPage() {
                 {transactions?.transactions.map((txn: any) => (
                   <TableRow key={txn.id}>
                     <TableCell>
-                      {new Date(txn.ts).toLocaleDateString()}
+                      {new Date(txn.timestamp).toLocaleDateString()}
                     </TableCell>
                     <TableCell>{txn.merchant}</TableCell>
                     <TableCell>

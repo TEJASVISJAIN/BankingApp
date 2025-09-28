@@ -243,7 +243,6 @@ class ApiService {
       const response = await api.post('/api/actions/freeze-card', {
         cardId,
         otp,
-        customerId,
       }, {
         headers: {
           'X-User-Role': userRole,

@@ -198,4 +198,16 @@ export class DatabaseService {
       return [];
     }
   }
+
+  async getTransactionCountByCustomer(customerId: string): Promise<number> {
+    try {
+      const count = await this.transactionRepository.count({
+        where: { customerId }
+      });
+      return count;
+    } catch (error) {
+      secureLogger.error('Failed to get transaction count', { customerId, error: error.message });
+      return 0;
+    }
+  }
 }
