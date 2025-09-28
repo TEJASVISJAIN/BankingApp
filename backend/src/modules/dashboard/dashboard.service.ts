@@ -116,7 +116,7 @@ export class DashboardService {
         const riskLevel = this.calculateRiskLevel(txn.amount);
         const riskScore = this.calculateRiskScore(txn.amount, riskLevel);
         
-        // Get transaction count for this customer
+        // Get transaction count for this customer (ALL transactions, not just recent)
         const transactionCount = await this.transactionRepository.count({
           where: { customerId: txn.customerId }
         });
@@ -142,7 +142,7 @@ export class DashboardService {
           transactionCount: transactionCount,
         };
         
-        console.log(`Debug: Created alert for ${txn.id}, customerId: ${alert.customerId}, customerName: ${alert.customerName}`);
+        console.log(`Debug: Created alert for ${txn.id}, customerId: ${alert.customerId}, customerName: ${alert.customerName}, totalTransactions: ${transactionCount}`);
         fraudTriage.push(alert);
       }
 

@@ -9,12 +9,14 @@ export class InsightsService {
   async getCustomerInsights(customerId: string) {
     try {
       const customer = await this.databaseService.findCustomerById(customerId);
-      const transactions = await this.databaseService.findTransactionsByCustomerLast90Days(customerId, 50, 0);
+      
+      // Get ALL transactions for this customer (not just last 90 days for insights)
+      const allTransactions = await this.databaseService.findTransactionsByCustomer(customerId, 1000, 0);
       const chargebacks = await this.databaseService.findChargebacksByCustomer(customerId);
 
       // Calculate top merchants
       const merchantStats = new Map<string, { amount: number; count: number }>();
-      transactions.forEach(transaction => {
+      allTransactions.forEach(transaction => {
         const merchant = transaction.merchant || 'Unknown';
         if (!merchantStats.has(merchant)) {
           merchantStats.set(merchant, { amount: 0, count: 0 });
@@ -34,28 +36,27 @@ export class InsightsService {
         .slice(0, 5);
 
       // Calculate MCC mix analysis
-      const mccMix = this.calculateMccMix(transactions);
+      const mccMix = this.calculateMccMix(allTransactions);
       
       // Calculate spend categories
-      const spendCategories = this.calculateSpendCategories(transactions);
+      const spendCategories = this.calculateSpendCategories(allTransactions);
       
       // Detect time-series anomalies
-      const anomalies = this.detectTimeSeriesAnomalies(transactions);
+      const anomalies = this.detectTimeSeriesAnomalies(allTransactions);
 
-      // Calculate total spend
-      // Calculate total positive spending (excluding withdrawals)
-      const totalSpend = transactions.reduce((sum, transaction) => sum + Math.max(0, transaction.amount), 0);
+      // Calculate total spend (positive amounts only)
+      const totalSpend = allTransactions.reduce((sum, transaction) => sum + Math.max(0, transaction.amount), 0);
 
       // Calculate monthly trend
-      const monthlyTrend = this.calculateMonthlyTrend(transactions);
+      const monthlyTrend = this.calculateMonthlyTrend(allTransactions);
       
       return {
         topMerchants: topMerchants.slice(0, 5), // Top 5 merchants
         categories: spendCategories.slice(0, 10), // Top 10 categories
         monthlyTrend: monthlyTrend,
         totalSpend: totalSpend,
-        transactionCount: transactions.length,
-        riskScore: this.calculateRiskScore(transactions, chargebacks)
+        transactionCount: allTransactions.length,
+        riskScore: this.calculateRiskScore(allTransactions, chargebacks)
       };
     } catch (error) {
       secureLogger.error('Failed to get customer insights', { customerId, error: error.message });

@@ -161,12 +161,34 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
     }
   }, [transactionId]);
 
-  // Check dispute status when assessment is loaded
+  // Function to check card status
+  const checkCardStatus = useCallback(async () => {
+    if (!assessment?.transaction?.cardId) return;
+    
+    try {
+      // In a real implementation, you would call an API to get the current card status
+      // For now, we'll just ensure the card status is properly set
+      if (assessment.transaction.cardStatus === 'frozen') {
+        setAssessment(prev => prev ? {
+          ...prev,
+          transaction: prev.transaction ? {
+            ...prev.transaction,
+            cardStatus: 'frozen'
+          } : undefined
+        } : null);
+      }
+    } catch (error) {
+      console.error('Failed to check card status:', error);
+    }
+  }, [assessment?.transaction?.cardId]);
+
+  // Check dispute status and card status when assessment is loaded
   useEffect(() => {
     if (assessment && transactionId) {
       checkDisputeStatus();
+      checkCardStatus();
     }
-  }, [assessment, checkDisputeStatus, transactionId]);
+  }, [assessment, checkDisputeStatus, checkCardStatus, transactionId]);
   
   // 429 UX handling
   const [rateLimited, setRateLimited] = useState(false);
@@ -680,6 +702,15 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
         );
         
         if (response.result?.status === 'FROZEN') {
+          // Update the assessment state to reflect the frozen card status
+          setAssessment(prev => prev ? {
+            ...prev,
+            transaction: prev.transaction ? {
+              ...prev.transaction,
+              cardStatus: 'frozen'
+            } : undefined
+          } : null);
+          
           setSnackbar({
             open: true,
             message: 'Card frozen successfully',
@@ -838,6 +869,41 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
           </Card>
         )}
 
+        {assessment?.transaction && (
+          <Card sx={{ mb: 2 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Transaction Details
+              </Typography>
+              
+              <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CreditCard color="action" />
+                  <Typography variant="body2">
+                    Card: ****{assessment.transaction.cardId.slice(-4)}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2">
+                    Amount: ₹{(Math.abs(assessment.transaction.amount) / 100).toLocaleString()}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2">
+                    Merchant: {assessment.transaction.merchant}
+                  </Typography>
+                </Box>
+                <Chip
+                  label={assessment.transaction.cardStatus === 'frozen' ? 'Frozen' : 'Active'}
+                  color={assessment.transaction.cardStatus === 'frozen' ? 'error' : 'success'}
+                  icon={assessment.transaction.cardStatus === 'frozen' ? <Block /> : <CheckCircle />}
+                  variant={assessment.transaction.cardStatus === 'frozen' ? 'filled' : 'outlined'}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
         {assessment?.signals && assessment.signals.length > 0 && (
           <Card sx={{ mb: 2 }}>
             <CardContent>
@@ -976,9 +1042,9 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
         {assessment && (
           <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
             <Button
-              variant="contained"
-              color="error"
-              startIcon={<Block />}
+              variant={assessment?.transaction?.cardStatus === 'frozen' ? 'outlined' : 'contained'}
+              color={assessment?.transaction?.cardStatus === 'frozen' ? 'success' : 'error'}
+              startIcon={assessment?.transaction?.cardStatus === 'frozen' ? <CheckCircle /> : <Block />}
               disabled={
                 (assessment?.recommendation !== 'block' && assessment?.recommendation !== 'investigate') || 
                 actionLoading === 'freeze' || 
@@ -989,7 +1055,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
             >
               {actionLoading === 'freeze' ? <CircularProgress size={20} /> : 
                rateLimited ? `Try again in ${retryAfter}s` : 
-               assessment?.transaction?.cardStatus === 'frozen' ? 'Card is Frozen' : 'Freeze Card'}
+               assessment?.transaction?.cardStatus === 'frozen' ? 'Frozen' : 'Freeze Card'}
             </Button>
             <Button
               variant="contained"

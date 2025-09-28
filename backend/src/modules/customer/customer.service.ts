@@ -60,6 +60,9 @@ export class CustomerService {
       const limit = sizeNum;
       const offset = (pageNum - 1) * sizeNum;
       
+      // Get total count for proper pagination
+      const totalCount = await this.databaseService.getTransactionCountByCustomer(id);
+      
       // Use 90-day optimized query for better performance
       const transactions = await this.databaseService.findTransactionsByCustomerLast90Days(id, limit, offset);
       
@@ -68,6 +71,7 @@ export class CustomerService {
         customerId: id,
         duration,
         transactionCount: transactions.length,
+        totalCount,
         performance: duration <= 100 ? 'good' : 'slow'
       });
       
@@ -86,10 +90,10 @@ export class CustomerService {
           createdAt: transaction.createdAt,
         })),
         pagination: {
-          page,
-          size,
-          total: transactions.length,
-          totalPages: Math.ceil(transactions.length / size),
+          page: pageNum,
+          size: sizeNum,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / sizeNum),
         }
       };
     } catch (error) {
