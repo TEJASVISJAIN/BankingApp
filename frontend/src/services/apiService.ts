@@ -14,8 +14,11 @@ const api = axios.create({
 // Types
 export interface DashboardKpis {
   totalSpend: number
+  spendChange: number
   highRiskAlerts: number
+  highRiskChange: number
   disputesOpened: number
+  disputesChange: number
   avgTriageTime: number
   totalTransactions: number
   fraudRate: number
@@ -123,6 +126,16 @@ class ApiService {
       return response.data
     } catch (error) {
       console.error('Failed to fetch fraud triage:', error)
+      throw error
+    }
+  }
+
+  async getDisputes(): Promise<any[]> {
+    try {
+      const response = await api.get('/api/dashboard/disputes')
+      return response.data
+    } catch (error) {
+      console.error('Failed to fetch disputes:', error)
       throw error
     }
   }
@@ -264,13 +277,18 @@ class ApiService {
     }
   }
 
-  async openDispute(txnId: string, reasonCode: string, confirm: boolean, customerId?: string): Promise<any> {
+  async openDispute(txnId: string, reasonCode: string, confirm: boolean): Promise<any> {
     try {
+      const userRole = localStorage.getItem('userRole') || 'agent'
+      
       const response = await api.post('/api/actions/open-dispute', {
         txnId,
         reasonCode,
         confirm,
-        customerId,
+      }, {
+        headers: {
+          'X-User-Role': userRole,
+        }
       })
       return response.data
     } catch (error) {

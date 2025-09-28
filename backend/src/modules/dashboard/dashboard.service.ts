@@ -21,39 +21,77 @@ export class DashboardService {
 
   async getDashboardKpis() {
     try {
-      // Get total spend from transactions
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+      const sixtyDaysAgo = new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000));
+
+      // Get total spend from last 30 days (positive amounts only)
       const totalSpendResult = await this.transactionRepository
         .createQueryBuilder('transaction')
         .select('SUM(transaction.amount)', 'total')
+        .where('transaction.amount > 0')
+        .andWhere('transaction.timestamp >= :thirtyDaysAgo', { thirtyDaysAgo })
         .getRawOne();
       
       const totalSpend = parseInt(totalSpendResult?.total || '0');
 
-      // Get total transactions count
-      const totalTransactions = await this.transactionRepository.count();
+      // Get total spend from previous 30 days for comparison
+      const previousSpendResult = await this.transactionRepository
+        .createQueryBuilder('transaction')
+        .select('SUM(transaction.amount)', 'total')
+        .where('transaction.amount > 0')
+        .andWhere('transaction.timestamp >= :sixtyDaysAgo', { sixtyDaysAgo })
+        .andWhere('transaction.timestamp < :thirtyDaysAgo', { thirtyDaysAgo })
+        .getRawOne();
+      
+      const previousSpend = parseInt(previousSpendResult?.total || '0');
+      const spendChange = previousSpend > 0 ? ((totalSpend - previousSpend) / previousSpend) * 100 : 0;
 
-      // Get high risk alerts (transactions with high amounts or suspicious patterns)
+      // Get high risk alerts (transactions with high amounts)
       const highRiskAlerts = await this.transactionRepository
         .createQueryBuilder('transaction')
-        .where('transaction.amount > :threshold', { threshold: 100000 }) // > 1000 INR
+        .where('ABS(transaction.amount) > :threshold', { threshold: 50000 }) // > 500 INR
+        .andWhere('transaction.timestamp >= :thirtyDaysAgo', { thirtyDaysAgo })
         .getCount();
 
-      // Get disputes opened (chargebacks)
-      const disputesOpened = await this.chargebackRepository.count();
+      // Get previous period high risk alerts for comparison
+      const previousHighRiskAlerts = await this.transactionRepository
+        .createQueryBuilder('transaction')
+        .where('ABS(transaction.amount) > :threshold', { threshold: 50000 })
+        .andWhere('transaction.timestamp >= :sixtyDaysAgo', { sixtyDaysAgo })
+        .andWhere('transaction.timestamp < :thirtyDaysAgo', { thirtyDaysAgo })
+        .getCount();
 
-      // Calculate fraud rate
-      const fraudRate = totalTransactions > 0 ? (disputesOpened / totalTransactions) * 100 : 0;
+      const highRiskChange = previousHighRiskAlerts > 0 ? 
+        ((highRiskAlerts - previousHighRiskAlerts) / previousHighRiskAlerts) * 100 : 0;
 
-      // Calculate average triage time (mock data for now)
+      // Get disputes opened in last 30 days
+      const disputesOpened = await this.chargebackRepository
+        .createQueryBuilder('chargeback')
+        .where('chargeback.createdAt >= :thirtyDaysAgo', { thirtyDaysAgo })
+        .getCount();
+
+      // Get previous period disputes for comparison
+      const previousDisputes = await this.chargebackRepository
+        .createQueryBuilder('chargeback')
+        .where('chargeback.createdAt >= :sixtyDaysAgo', { sixtyDaysAgo })
+        .andWhere('chargeback.createdAt < :thirtyDaysAgo', { thirtyDaysAgo })
+        .getCount();
+
+      const disputesChange = previousDisputes > 0 ? 
+        ((disputesOpened - previousDisputes) / previousDisputes) * 100 : 0;
+
+      // Calculate average triage time (mock for now, but could be calculated from actual triage sessions)
       const avgTriageTime = 2.5; // minutes
 
       return {
         totalSpend,
-        totalTransactions,
+        spendChange: Math.round(spendChange * 10) / 10,
         highRiskAlerts,
+        highRiskChange: Math.round(highRiskChange * 10) / 10,
         disputesOpened,
+        disputesChange: Math.round(disputesChange * 10) / 10,
         avgTriageTime,
-        fraudRate: Math.round(fraudRate * 100) / 100,
       };
     } catch (error) {
       console.error('Error fetching dashboard KPIs:', error);
@@ -66,14 +104,15 @@ export class DashboardService {
       // Get recent high-risk transactions that need triage
       const highRiskTransactions = await this.transactionRepository
         .createQueryBuilder('transaction')
-        .leftJoinAndSelect('transaction.customer', 'customer')
         .where('ABS(transaction.amount) > :threshold', { threshold: 5000 }) // > 50 INR (using absolute value)
         .orderBy('transaction.timestamp', 'DESC')
         .limit(20)
         .getMany();
 
       // Transform to fraud triage format
-      const fraudTriage = await Promise.all(highRiskTransactions.map(async (txn, index) => {
+      const fraudTriage = [];
+      
+      for (const txn of highRiskTransactions) {
         const riskLevel = this.calculateRiskLevel(txn.amount);
         const riskScore = this.calculateRiskScore(txn.amount, riskLevel);
         
@@ -82,10 +121,15 @@ export class DashboardService {
           where: { customerId: txn.customerId }
         });
         
-        return {
+        // Get customer data manually
+        const customer = await this.customerRepository.findOne({
+          where: { id: txn.customerId }
+        });
+        
+        const alert = {
           id: `alert_${txn.id}`,
           customerId: txn.customerId,
-          customerName: txn.customer?.name || 'Unknown',
+          customerName: customer?.name || 'Unknown',
           transactionId: txn.id,
           amount: txn.amount,
           merchant: txn.merchant || 'Unknown Merchant',
@@ -97,12 +141,43 @@ export class DashboardService {
           location: txn.geo?.city || 'Unknown',
           transactionCount: transactionCount,
         };
-      }));
+        
+        console.log(`Debug: Created alert for ${txn.id}, customerId: ${alert.customerId}, customerName: ${alert.customerName}`);
+        fraudTriage.push(alert);
+      }
 
+      console.log(`Debug: Returning ${fraudTriage.length} fraud triage alerts`);
+      console.log(`Debug: First alert:`, JSON.stringify(fraudTriage[0], null, 2));
       return fraudTriage;
     } catch (error) {
       console.error('Error fetching fraud triage data:', error);
       throw new Error('Failed to fetch fraud triage data');
+    }
+  }
+
+  async getDisputes() {
+    try {
+      // Get all disputes (chargebacks) with customer info
+      const disputes = await this.chargebackRepository
+        .createQueryBuilder('chargeback')
+        .leftJoinAndSelect('chargeback.customer', 'customer')
+        .orderBy('chargeback.createdAt', 'DESC')
+        .getMany();
+
+      return disputes.map(dispute => ({
+        id: dispute.id,
+        transactionId: dispute.transactionId,
+        customerId: dispute.customerId,
+        customerName: dispute.customer?.name || 'Unknown',
+        amount: dispute.amount,
+        reason: dispute.reason,
+        status: dispute.status,
+        createdAt: dispute.createdAt,
+        updatedAt: dispute.updatedAt,
+      }));
+    } catch (error) {
+      console.error('Error fetching disputes:', error);
+      throw new Error('Failed to fetch disputes');
     }
   }
 

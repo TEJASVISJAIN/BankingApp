@@ -17,7 +17,6 @@ import {
   Avatar,
   Menu,
   MenuItem,
-  Badge,
   Chip,
   Select,
   FormControl,
@@ -26,10 +25,8 @@ import {
   Menu as MenuIcon,
   Dashboard,
   People,
-  Assessment,
   Security,
-  Settings,
-  Notifications,
+  Gavel,
   AccountCircle,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -44,8 +41,7 @@ const menuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/' },
   { text: 'Customers', icon: <People />, path: '/customers' },
   { text: 'Fraud Alerts', icon: <Security />, path: '/alerts' },
-  { text: 'Analytics', icon: <Assessment />, path: '/analytics' },
-  { text: 'Settings', icon: <Settings />, path: '/settings' },
+  { text: 'Disputes', icon: <Gavel />, path: '/disputes' },
 ];
 
 export default function AppLayout({ children }: AppLayoutProps) {
@@ -187,11 +183,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
               </Select>
             </FormControl>
 
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="error">
-                <Notifications />
-              </Badge>
-            </IconButton>
             
             <IconButton
               size="large"

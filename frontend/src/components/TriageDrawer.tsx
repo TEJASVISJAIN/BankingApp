@@ -80,6 +80,20 @@ interface FraudAssessment {
     merchant: string;
     cardStatus?: string;
   };
+  disputeStatus?: 'none' | 'pending' | 'approved' | 'rejected';
+  kbResults?: {
+    query: string;
+    results: Array<{
+      id: string;
+      title: string;
+      content: string;
+      relevance: number;
+      source: string;
+      anchor?: string;
+    }>;
+    totalResults: number;
+    fallbackUsed: boolean;
+  };
 }
 
 interface TriageDrawerProps {
@@ -120,6 +134,39 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
     message: string;
     severity: 'success' | 'error' | 'warning' | 'info';
   }>({ open: false, message: '', severity: 'info' });
+
+  // Function to check for existing disputes
+  const checkDisputeStatus = useCallback(async () => {
+    if (!transactionId) return;
+    
+    try {
+      const disputes = await apiService.getDisputes();
+      const existingDispute = disputes.find(dispute => dispute.transactionId === transactionId);
+      
+      if (existingDispute) {
+        setAssessment(prev => prev ? {
+          ...prev,
+          disputeStatus: existingDispute.status === 'pending' ? 'pending' : 
+                        existingDispute.status === 'approved' ? 'approved' : 
+                        existingDispute.status === 'rejected' ? 'rejected' : 'pending'
+        } : null);
+      } else {
+        setAssessment(prev => prev ? {
+          ...prev,
+          disputeStatus: 'none'
+        } : null);
+      }
+    } catch (error) {
+      console.error('Failed to check dispute status:', error);
+    }
+  }, [transactionId]);
+
+  // Check dispute status when assessment is loaded
+  useEffect(() => {
+    if (assessment && transactionId) {
+      checkDisputeStatus();
+    }
+  }, [assessment, checkDisputeStatus, transactionId]);
   
   // 429 UX handling
   const [rateLimited, setRateLimited] = useState(false);
@@ -305,6 +352,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                 recommendation: data.assessment.decision?.recommendation || 'monitor',
                 signals: data.assessment.riskSignals?.signals || [],
                 reasoning: data.assessment.decision?.reasoning || [],
+                kbResults: data.assessment.kbResults,
                 transaction: data.assessment.transactions?.current ? {
                   id: data.assessment.transactions.current.id,
                   cardId: data.assessment.transactions.current.cardId,
@@ -329,6 +377,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                 recommendation: data.assessment.decision?.recommendation || 'monitor',
                 signals: data.assessment.riskSignals?.signals || [],
                 reasoning: data.assessment.decision?.reasoning || [],
+                kbResults: data.assessment.kbResults,
                 transaction: data.assessment.transactions?.current ? {
                   id: data.assessment.transactions.current.id,
                   cardId: data.assessment.transactions.current.cardId,
@@ -562,9 +611,10 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
           response = await apiService.openDispute(
             transactionId,
             '10.4', // Reason code
-            true,
-            customerId
+            true
           );
+          // Refresh dispute status after opening
+          await checkDisputeStatus();
           break;
         case 'contact':
           response = await apiService.contactCustomer({
@@ -795,7 +845,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                 Risk Signals
               </Typography>
               <List dense>
-                {(assessment?.signals || []).map((signal, index) => (
+                {(assessment?.signals || []).slice(0, 3).map((signal, index) => (
                   <ListItem key={index}>
                     <ListItemIcon>
                       {getSignalIcon(signal.type)}
@@ -808,6 +858,63 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
                       label={signal.severity}
                       color={getRiskColor(signal.severity)}
                       size="small"
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        )}
+
+        {assessment?.kbResults && assessment.kbResults.results.length > 0 && (
+          <Card sx={{ mb: 2 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Knowledge Base References
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Query: "{assessment.kbResults.query}" ({assessment.kbResults.totalResults} results)
+                {assessment.kbResults.fallbackUsed && (
+                  <Chip label="Fallback Used" color="warning" size="small" sx={{ ml: 1 }} />
+                )}
+              </Typography>
+              <List dense>
+                {assessment.kbResults.results.slice(0, 3).map((result) => (
+                  <ListItem key={result.id}>
+                    <ListItemIcon>
+                      <Info color="info" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={result.title}
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            {result.content.length > 150 
+                              ? `${result.content.substring(0, 150)}...` 
+                              : result.content}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Chip 
+                              label={`Relevance: ${Math.round(result.relevance * 100)}%`} 
+                              size="small" 
+                              color={result.relevance > 0.7 ? 'success' : result.relevance > 0.4 ? 'warning' : 'default'}
+                            />
+                            <Chip 
+                              label={result.source} 
+                              size="small" 
+                              variant="outlined"
+                            />
+                            {result.anchor && (
+                              <Chip 
+                                label={`Anchor: ${result.anchor}`} 
+                                size="small" 
+                                variant="outlined"
+                                color="info"
+                              />
+                            )}
+                          </Box>
+                        </Box>
+                      }
                     />
                   </ListItem>
                 ))}
@@ -888,11 +995,15 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
               variant="contained"
               color="warning"
               startIcon={<Gavel />}
-              disabled={actionLoading === 'dispute' || rateLimited}
+              disabled={actionLoading === 'dispute' || rateLimited || assessment?.disputeStatus !== 'none'}
               onClick={() => handleAction('dispute')}
             >
               {actionLoading === 'dispute' ? <CircularProgress size={20} /> : 
-               rateLimited ? `Try again in ${retryAfter}s` : 'Open Dispute'}
+               rateLimited ? `Try again in ${retryAfter}s` : 
+               assessment?.disputeStatus === 'pending' ? 'Dispute Pending' :
+               assessment?.disputeStatus === 'approved' ? 'Dispute Approved' :
+               assessment?.disputeStatus === 'rejected' ? 'Dispute Rejected' :
+               'Open Dispute'}
             </Button>
             <Button
               variant="outlined"

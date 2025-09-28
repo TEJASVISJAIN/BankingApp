@@ -32,7 +32,9 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import apiService from '../services/apiService';
+import websocketService from '../services/websocketService';
 import PageSkeleton from '../components/Loading/PageSkeleton';
 import { maskCustomerId } from '../utils/piiRedaction';
 
@@ -52,17 +54,61 @@ export default function ProfessionalDashboard() {
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data: kpis, isLoading: kpisLoading, error: kpisError } = useQuery({
+  const { data: kpis, isLoading: kpisLoading, error: kpisError, refetch: refetchKpis } = useQuery({
     queryKey: ['dashboard', 'kpis'],
     queryFn: () => apiService.getDashboardKpis(),
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: fraudAlerts, isLoading: alertsLoading, error: alertsError } = useQuery({
+  const { data: fraudAlerts, isLoading: alertsLoading, error: alertsError, refetch: refetchAlerts } = useQuery({
     queryKey: ['dashboard', 'fraud-alerts'],
     queryFn: () => apiService.getFraudTriage(),
     staleTime: 30 * 1000,
   });
+
+  // WebSocket connection and real-time updates
+  useEffect(() => {
+    // Connect to WebSocket
+    websocketService.connect();
+
+    // Listen for new transactions
+    const unsubscribeNewTransaction = websocketService.onNewTransaction((transaction) => {
+      console.log('New transaction received:', transaction);
+      // Refetch data to get updated KPIs and alerts
+      refetchKpis();
+      refetchAlerts();
+    });
+
+    // Listen for new disputes
+    const unsubscribeNewDispute = websocketService.onNewDispute((dispute) => {
+      console.log('New dispute received:', dispute);
+      // Refetch KPIs to update dispute count
+      refetchKpis();
+    });
+
+    // Listen for KPI updates
+    const unsubscribeKpiUpdate = websocketService.onKpiUpdate((kpis) => {
+      console.log('KPI update received:', kpis);
+      // Refetch KPIs to get latest data
+      refetchKpis();
+    });
+
+    // Listen for fraud alerts
+    const unsubscribeFraudAlert = websocketService.onFraudAlert((alert) => {
+      console.log('Fraud alert received:', alert);
+      // Refetch alerts to get latest data
+      refetchAlerts();
+    });
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribeNewTransaction();
+      unsubscribeNewDispute();
+      unsubscribeKpiUpdate();
+      unsubscribeFraudAlert();
+      websocketService.disconnect();
+    };
+  }, [refetchKpis, refetchAlerts]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -83,31 +129,31 @@ export default function ProfessionalDashboard() {
       value: `₹${((kpis?.totalSpend || 0) / 100).toLocaleString()}`,
       subtitle: 'Last 30 days',
       icon: <TrendingUp color="primary" />,
-      trend: '+12.5%',
-      trendDirection: 'up' as const,
+      trend: `${(kpis?.spendChange || 0) >= 0 ? '+' : ''}${kpis?.spendChange || 0}%`,
+      trendDirection: (kpis?.spendChange || 0) >= 0 ? 'up' as const : 'down' as const,
     },
     {
       title: 'High Risk Alerts',
       value: kpis?.highRiskAlerts || 0,
       subtitle: 'Requires attention',
       icon: <Security color="error" />,
-      trend: '-8.2%',
-      trendDirection: 'down' as const,
+      trend: `${(kpis?.highRiskChange || 0) >= 0 ? '+' : ''}${kpis?.highRiskChange || 0}%`,
+      trendDirection: (kpis?.highRiskChange || 0) >= 0 ? 'up' as const : 'down' as const,
     },
     {
       title: 'Disputes Opened',
       value: kpis?.disputesOpened || 0,
       subtitle: 'This month',
       icon: <Assessment color="warning" />,
-      trend: '+3.1%',
-      trendDirection: 'up' as const,
+      trend: `${(kpis?.disputesChange || 0) >= 0 ? '+' : ''}${kpis?.disputesChange || 0}%`,
+      trendDirection: (kpis?.disputesChange || 0) >= 0 ? 'up' as const : 'down' as const,
     },
     {
       title: 'Avg Triage Time',
       value: `${kpis?.avgTriageTime || 0}s`,
       subtitle: 'Response time',
       icon: <CheckCircle color="success" />,
-      trend: '-15.3%',
+      trend: '-15.3%', // Keep this static for now
       trendDirection: 'down' as const,
     },
   ];

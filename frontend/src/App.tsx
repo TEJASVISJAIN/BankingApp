@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -15,11 +15,9 @@ import LoadingSpinner from './components/Loading/LoadingSpinner';
 import ProfessionalDashboard from './pages/ProfessionalDashboard';
 import { CustomerPage } from './pages/CustomerPage';
 import { AlertsPage } from './pages/AlertsPage';
+import DisputesPage from './pages/DisputesPage';
 import NotFound from './pages/NotFound';
 
-// Lazy load heavy components
-const AnalyticsPage = React.lazy(() => import('./pages/AnalyticsPage'));
-const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 
 // Create theme
 const theme = createTheme({
@@ -138,25 +136,8 @@ function App() {
                   <Route path="/alerts" element={<AlertsPage />} />
                   <Route path="/alerts/:id" element={<AlertsPage />} />
                   
-                  {/* Analytics Route */}
-                  <Route 
-                    path="/analytics" 
-                    element={
-                      <Suspense fallback={<LoadingSpinner message="Loading analytics..." />}>
-                        <AnalyticsPage />
-                      </Suspense>
-                    } 
-                  />
-                  
-                  {/* Settings Route */}
-                  <Route 
-                    path="/settings" 
-                    element={
-                      <Suspense fallback={<LoadingSpinner message="Loading settings..." />}>
-                        <SettingsPage />
-                      </Suspense>
-                    } 
-                  />
+                  {/* Disputes Route */}
+                  <Route path="/disputes" element={<DisputesPage />} />
                   
                   {/* 404 Route */}
                   <Route path="*" element={<NotFound />} />

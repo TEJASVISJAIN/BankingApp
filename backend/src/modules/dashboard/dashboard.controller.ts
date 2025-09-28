@@ -22,4 +22,11 @@ export class DashboardController {
   async getFraudTriage() {
     return this.dashboardService.getFraudTriage();
   }
+
+  @Get('disputes')
+  @ApiOperation({ summary: 'Get all disputes' })
+  @ApiResponse({ status: 200, description: 'Disputes retrieved successfully' })
+  async getDisputes() {
+    return this.dashboardService.getDisputes();
+  }
 }

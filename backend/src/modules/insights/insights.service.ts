@@ -43,7 +43,8 @@ export class InsightsService {
       const anomalies = this.detectTimeSeriesAnomalies(transactions);
 
       // Calculate total spend
-      const totalSpend = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+      // Calculate total positive spending (excluding withdrawals)
+      const totalSpend = transactions.reduce((sum, transaction) => sum + Math.max(0, transaction.amount), 0);
 
       // Calculate monthly trend
       const monthlyTrend = this.calculateMonthlyTrend(transactions);
@@ -131,14 +132,16 @@ export class InsightsService {
       stats.count += 1;
     });
 
-    const totalAmount = Array.from(categories.values()).reduce((sum, stats) => sum + stats.amount, 0);
+    // Calculate total positive spending (excluding withdrawals)
+    const totalPositiveAmount = Array.from(categories.values())
+      .reduce((sum, stats) => sum + Math.max(0, stats.amount), 0);
 
     return Array.from(categories.entries())
       .map(([category, stats]) => ({
         category,
         amount: stats.amount,
         count: stats.count,
-        percentage: totalAmount > 0 ? (stats.amount / totalAmount) * 100 : 0,
+        percentage: totalPositiveAmount > 0 ? (Math.max(0, stats.amount) / totalPositiveAmount) * 100 : 0,
       }))
       .sort((a, b) => b.amount - a.amount);
   }

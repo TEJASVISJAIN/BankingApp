@@ -1,8 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { secureLogger } from '../../utils/logger';
 import * as csv from 'csv-parser';
 import { Readable } from 'stream';
+import { DashboardGateway } from '../dashboard/dashboard.gateway';
 
 export interface TransactionData {
   id: string;
@@ -20,7 +21,11 @@ export interface TransactionData {
 
 @Injectable()
 export class IngestionService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    @Inject(forwardRef(() => DashboardGateway))
+    private readonly dashboardGateway: DashboardGateway,
+  ) {}
 
   async ingestTransactions(transactions: TransactionData[]) {
     try {
@@ -51,6 +56,13 @@ export class IngestionService {
           // Insert transaction
           await this.databaseService.createTransaction(transaction);
           results.inserted++;
+          
+          // Emit real-time update for new transaction
+          try {
+            this.dashboardGateway.broadcastNewTransaction(transaction);
+          } catch (error) {
+            secureLogger.warn('Failed to broadcast transaction update', { error: error.message });
+          }
           
         } catch (error) {
           results.errors++;
