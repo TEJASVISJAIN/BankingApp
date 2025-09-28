@@ -1,139 +1,144 @@
-# Aegis Support: Multi-Agent Banking Insights & Fraud Triage
+# Aegis Banking Fraud Detection System
 
-A production-ready internal tool for banking care agents to analyze transactions, generate AI reports, and triage suspected fraud using a multi-agent pipeline.
+A comprehensive fraud detection and triage system built with NestJS, React, and PostgreSQL, featuring multi-agent AI orchestration for real-time fraud analysis.
 
-## Quick Start
+## 🚀 Quick Start (≤3 Commands)
 
 ```bash
-# 1. Start the system
+# 1. Start the entire system
 docker-compose up -d
 
-# 2. Seed the database with 1M transactions
+# 2. Populate with test data
 npm run seed
 
 # 3. Run evaluations
 npm run eval
-
-# 4. Run acceptance tests
-npm run acceptance
-
-# 5. Run final evaluation
-npm run final-eval
 ```
 
-## 🧪 Testing & Evaluation
+**Access Points:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
+- API Docs: http://localhost:3001/api/docs
 
-### Comprehensive Test Suite
-- **Acceptance Scenarios**: 7 core scenarios with 100% pass rate
-- **Performance Verification**: P95 ≤ 100ms achieved
-- **Golden Evaluation Set**: 12 test cases with 95%+ accuracy
-- **Final Self-Evaluation**: 100% production readiness score
+## 🏗️ High-Level Architecture
 
-### Test Commands
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   React Frontend │    │  NestJS Backend  │    │   PostgreSQL    │
+│   (Port 3000)   │◄──►│   (Port 3001)   │◄──►│   (Port 5432)   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                              │
+                              ▼
+                       ┌─────────────────┐
+                       │     Redis        │
+                       │   (Port 6379)    │
+                       └─────────────────┘
+```
+
+### Core Components
+
+**Frontend (React/TypeScript)**
+- Dashboard with KPIs and fraud alerts
+- Customer transaction timeline
+- Triage drawer with real-time agent updates
+- Virtualized tables for large datasets
+
+**Backend (NestJS/TypeScript)**
+- Multi-agent orchestration system
+- RESTful APIs with SSE streaming
+- Database partitioning and indexing
+- Comprehensive observability
+
+**Multi-Agent System**
+- **Orchestrator**: Plans and coordinates agent execution
+- **Fraud Agent**: Risk scoring and pattern detection
+- **Insights Agent**: Transaction analysis and categorization
+- **KB Agent**: Knowledge base search and citation
+- **Compliance Agent**: Policy enforcement and blocking
+- **Redactor**: PII detection and sanitization
+
+## 🔧 Key Trade-offs
+
+### Performance vs. Accuracy
+- **Chosen**: Rule-based fallbacks for 99.9% uptime
+- **Trade-off**: Slightly lower accuracy during LLM outages
+- **Rationale**: Banking systems require guaranteed response times
+
+### Real-time vs. Batch Processing
+- **Chosen**: Real-time triage with 5s timeout
+- **Trade-off**: Higher infrastructure costs
+- **Rationale**: Fraud detection requires immediate response
+
+### Data Privacy vs. Analytics
+- **Chosen**: PII redaction with selective analytics
+- **Trade-off**: Limited historical analysis capabilities
+- **Rationale**: Compliance with banking regulations
+
+### Scalability vs. Complexity
+- **Chosen**: Database partitioning with application-level sharding
+- **Trade-off**: More complex query logic
+- **Rationale**: Supports 1M+ transactions with sub-100ms queries
+
+## 📊 Performance Targets
+
+- **Query Performance**: Customer transactions (90 days) p95 ≤ 100ms
+- **Agent E2E**: Triage decision ≤ 5s on fixtures
+- **Rate Limiting**: 5 req/s per session with exponential backoff
+- **Availability**: 99.9% uptime with circuit breakers
+
+## 🛡️ Security Features
+
+- API key authentication for all endpoints
+- Role-based access control (Agent/Lead roles)
+- PII redaction in logs and traces
+- Idempotency keys for critical operations
+- Rate limiting with token bucket algorithm
+
+## 📈 Observability
+
+- **Metrics**: Prometheus-compatible metrics collection
+- **Logging**: Structured JSON logs with PII redaction
+- **Tracing**: Agent execution traces with performance data
+- **Health Checks**: Database, Redis, and service health monitoring
+
+## 🧪 Evaluation Framework
+
+Run comprehensive evaluations with 12 golden test cases:
+
 ```bash
-# Run all acceptance scenarios
-npm run acceptance
-
-# Performance verification
-npm run perf-verify
-
-# Golden evaluation set
 npm run eval
-
-# Final self-evaluation
-npm run final-eval
-
-# Performance optimization
-npm run optimize
 ```
 
-## Architecture
+**Evaluation Metrics:**
+- Task success rate (%)
+- Fallback rate (%) and top failing tools
+- Average agent latency (p50/p95)
+- Policy denials by rule
+- Confusion matrix for risk levels
 
-### Frontend (React + TypeScript)
-- **Framework**: React 18 with Material-UI
-- **State**: React Query + Zustand
-- **Performance**: Virtualized tables, memoized components
-- **Accessibility**: WCAG compliant, keyboard navigation
-
-### Backend (Express.js + TypeScript)
-- **API**: RESTful with SSE streaming
-- **Database**: PostgreSQL with monthly partitioning
-- **Cache**: Redis for rate limiting and sessions
-- **Security**: API key auth, PII redaction, CSP headers
-
-### Multi-Agent System
-- **Orchestrator**: Plans and coordinates agent workflow
-- **Agents**: Insights, Fraud Detection, KB Search, Compliance
-- **Guardrails**: Retries, timeouts, circuit breakers, fallbacks
-
-## Key Features
-
-### Care Agent Dashboard
-- Upload/fetch customer transactions
-- AI-generated spend insights and reports
-- Fraud triage with multi-agent workflow
-- Real-time streaming updates
-
-### Team Lead Analytics
-- Risk queue management
-- SLA monitoring and agent effectiveness
-- Model evaluation results
-- Performance metrics
-
-### Security & Compliance
-- PII redaction (PAN numbers, emails)
-- API key authentication with RBAC
-- Rate limiting (5 req/s per session)
-- Idempotency for all operations
-
-## Performance
-- **Queries**: p95 ≤ 100ms for 90-day transaction windows
-- **Agent Triage**: ≤ 5s end-to-end decision making
-- **Scale**: 1M+ transactions with optimized indexes
-- **UI**: Virtualized tables for 2k+ rows
-
-## API Endpoints
+## 📁 Project Structure
 
 ```
-POST /api/ingest/transactions     # Upload transactions
-GET  /api/customer/:id/transactions  # Get customer transactions
-GET  /api/insights/:customerId/summary  # Spend insights
-POST /api/triage                 # Fraud triage workflow
-POST /api/action/freeze-card     # Freeze card action
-POST /api/action/open-dispute    # Open dispute action
-GET  /api/kb/search             # Knowledge base search
-GET  /api/evals/run             # Run evaluations
-GET  /metrics                   # Prometheus metrics
-GET  /health                    # Health check
+├── frontend/          # React TypeScript application
+├── backend/           # NestJS TypeScript API
+├── fixtures/          # Test data and golden cases
+├── scripts/           # Evaluation and seeding scripts
+├── docs/              # Architecture and design documents
+├── docker-compose.yml # Multi-service orchestration
+└── README.md          # This file
 ```
 
-## Development
+## 🔄 Development Workflow
 
-```bash
-# Install dependencies
-npm install
+1. **Local Development**: `docker-compose up -d`
+2. **Testing**: `npm run test` (unit + integration)
+3. **Evaluation**: `npm run eval` (golden cases)
+4. **Performance**: `npm run perf` (load testing)
+5. **Deployment**: `docker-compose -f docker-compose.prod.yml up -d`
 
-# Start development servers
-npm run dev
+## 📞 Support
 
-# Run tests
-npm test
-
-# Build for production
-npm run build
-```
-
-## Key Trade-offs
-
-1. **React over Vue**: Better ecosystem for banking UIs, more TypeScript support
-2. **Express over NestJS**: Faster development, more flexible for custom agents
-3. **PostgreSQL over SQLite**: Production-ready, excellent partitioning support
-4. **SSE over WebSockets**: Simpler for one-way agent progress updates
-5. **Custom Agents over LangChain**: Full control over guardrails and fallbacks
-
-## Monitoring
-
-- **Metrics**: Prometheus with custom agent metrics
-- **Logs**: Structured JSON with PII redaction
-- **Traces**: Human-readable agent execution traces
-- **Health**: Database and Redis connectivity checks
+For technical issues or questions:
+- Check the API documentation at `/api/docs`
+- Review the ADR.md for architectural decisions
+- Run `npm run eval` to verify system health

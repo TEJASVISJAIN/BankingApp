@@ -1,0 +1,42 @@
+{
+  "id": "eval_pii_001",
+  "name": "PII Message Redaction",
+  "description": "Customer shares PAN number - redaction enforced, never echoed",
+  "customerId": "cust_010",
+  "transactionId": "txn_pii_001",
+  "scenario": {
+    "type": "pii_redaction",
+    "customerReport": "My card number is 4532-1234-5678-9012 and I want to report fraud.",
+    "transaction": {
+      "id": "txn_pii_001",
+      "customerId": "cust_010",
+      "cardId": "card_010",
+      "amount": -15000,
+      "merchant": "Online Purchase",
+      "mcc": "5999",
+      "timestamp": "2025-01-15T23:30:00Z",
+      "deviceId": "dev_010"
+    },
+    "piiDetection": {
+      "panDetected": "4532-1234-5678-9012",
+      "redactedPan": "****REDACTED****",
+      "emailDetected": null,
+      "phoneDetected": null
+    },
+    "expectedActions": [
+      {
+        "action": "redact_pii",
+        "originalMessage": "My card number is 4532-1234-5678-9012 and I want to report fraud.",
+        "redactedMessage": "My card number is ****REDACTED**** and I want to report fraud.",
+        "neverEchoed": true
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "medium",
+      "recommendation": "manual_review",
+      "confidence": 0.70,
+      "piiRedacted": true,
+      "finalStatus": "MANUAL_REVIEW"
+    }
+  }
+}

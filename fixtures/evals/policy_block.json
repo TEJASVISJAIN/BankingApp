@@ -1,0 +1,47 @@
+{
+  "id": "eval_policy_block_001",
+  "name": "Policy Block - Unfreeze Without Identity",
+  "description": "Attempt to unfreeze card without proper identity verification - denied with handoff",
+  "customerId": "cust_009",
+  "transactionId": "txn_policy_block_001",
+  "scenario": {
+    "type": "policy_block",
+    "customerReport": "I want to unfreeze my card immediately.",
+    "transaction": {
+      "id": "txn_policy_block_001",
+      "customerId": "cust_009",
+      "cardId": "card_009",
+      "amount": 0,
+      "merchant": "Card Unfreeze Request",
+      "mcc": "6011",
+      "timestamp": "2025-01-15T22:15:00Z",
+      "deviceId": "dev_009"
+    },
+    "policyCheck": {
+      "action": "unfreeze_card",
+      "cardId": "card_009",
+      "identityVerified": false,
+      "policyViolation": "unfreeze_without_identity"
+    },
+    "expectedActions": [
+      {
+        "action": "policy_block",
+        "reason": "unfreeze_without_identity",
+        "denied": true,
+        "handoffRequired": true
+      },
+      {
+        "action": "handoff_to_human",
+        "reason": "policy_violation",
+        "assignedTo": "senior_agent"
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "high",
+      "recommendation": "deny",
+      "confidence": 1.0,
+      "policyBlocked": true,
+      "finalStatus": "DENIED"
+    }
+  }
+}

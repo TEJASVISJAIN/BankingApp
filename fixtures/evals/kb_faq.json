@@ -1,0 +1,67 @@
+{
+  "id": "eval_kb_faq_001",
+  "name": "KB FAQ - Travel Notice",
+  "description": "Customer asks about setting travel notice - cited steps with action card",
+  "customerId": "cust_011",
+  "transactionId": "txn_kb_faq_001",
+  "scenario": {
+    "type": "kb_faq",
+    "customerReport": "How do I set a travel notice for my upcoming trip?",
+    "transaction": {
+      "id": "txn_kb_faq_001",
+      "customerId": "cust_011",
+      "cardId": "card_011",
+      "amount": -5000,
+      "merchant": "Travel Booking",
+      "mcc": "7011",
+      "timestamp": "2025-01-15T16:20:00Z",
+      "deviceId": "dev_011"
+    },
+    "kbSearch": {
+      "query": "travel notice",
+      "matchedDocs": [
+        {
+          "docId": "kb_travel_001",
+          "title": "Setting Travel Notice",
+          "anchor": "travel-notice-steps",
+          "content": "To set a travel notice: 1. Log into your account 2. Go to Card Settings 3. Select Travel Notice 4. Enter destination and dates 5. Confirm"
+        }
+      ]
+    },
+    "expectedActions": [
+      {
+        "action": "kb_search",
+        "query": "travel notice",
+        "citations": [
+          {
+            "docId": "kb_travel_001",
+            "title": "Setting Travel Notice",
+            "anchor": "travel-notice-steps"
+          }
+        ]
+      },
+      {
+        "action": "provide_steps",
+        "steps": [
+          "Log into your account",
+          "Go to Card Settings", 
+          "Select Travel Notice",
+          "Enter destination and dates",
+          "Confirm"
+        ]
+      },
+      {
+        "action": "action_card",
+        "cardType": "travel_notice",
+        "customerId": "cust_011"
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "low",
+      "recommendation": "provide_help",
+      "confidence": 0.95,
+      "citationsProvided": true,
+      "finalStatus": "HELPED"
+    }
+  }
+}

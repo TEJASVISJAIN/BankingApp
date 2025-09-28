@@ -6,7 +6,7 @@
   "scripts": {
     "seed": "ts-node src/seed.ts",
     "seed-small": "ts-node src/seed-small.ts",
-    "eval": "ts-node src/eval.ts",
+    "eval": "ts-node src/eval-cli.ts",
     "optimize": "ts-node src/optimize.ts",
     "acceptance": "ts-node src/acceptance-tests.ts",
     "perf-verify": "ts-node src/performance-verify.ts",

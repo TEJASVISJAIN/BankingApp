@@ -1,0 +1,46 @@
+{
+  "id": "eval_chargebacks_001",
+  "name": "Past Chargebacks Heavy",
+  "description": "Customer with heavy chargeback history - escalate and open case",
+  "customerId": "cust_006",
+  "transactionId": "txn_chargebacks_001",
+  "scenario": {
+    "type": "past_chargebacks",
+    "customerReport": "I want to dispute this transaction.",
+    "transaction": {
+      "id": "txn_chargebacks_001",
+      "customerId": "cust_006",
+      "cardId": "card_006",
+      "amount": -25000,
+      "merchant": "Online Store",
+      "mcc": "5999",
+      "timestamp": "2025-01-15T18:15:00Z",
+      "deviceId": "dev_006"
+    },
+    "chargebackHistory": {
+      "totalChargebacks": 8,
+      "last90Days": 3,
+      "totalAmount": 150000,
+      "riskScore": 0.85
+    },
+    "expectedActions": [
+      {
+        "action": "escalate_case",
+        "customerId": "cust_006",
+        "reason": "high_chargeback_history",
+        "priority": "high"
+      },
+      {
+        "action": "open_case",
+        "caseType": "fraud_investigation",
+        "assignedTo": "senior_agent"
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "high",
+      "recommendation": "escalate",
+      "confidence": 0.92,
+      "finalStatus": "ESCALATED"
+    }
+  }
+}

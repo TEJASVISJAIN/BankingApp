@@ -1,23 +1,37 @@
 {
-  "id": "eval_unauthorized_charge",
-  "name": "Unauthorized Charge Scenario", 
-  "description": "Customer reports unauthorized charge, should open dispute",
-  "input": {
-    "customerId": "cust_002",
-    "suspectTxnId": "txn_01003",
-    "description": "Customer reports unauthorized charge of ₹450 at McDonald's",
-    "urgency": "medium"
-  },
-  "expectedResult": {
-    "action": "open_dispute",
-    "reasonCode": "10.4",
-    "riskLevel": "medium",
-    "reason": "Unauthorized transaction reported by customer"
-  },
-  "testSteps": [
-    "Verify customer identity",
-    "Review transaction details",
-    "Check for similar patterns",
-    "Open dispute with reason code 10.4"
-  ]
+  "id": "eval_unauthorized_001",
+  "name": "Unauthorized Charge - Open Dispute",
+  "description": "Customer reports unauthorized charge, system should open dispute with reason code 10.4",
+  "customerId": "cust_002",
+  "transactionId": "txn_unauthorized_001",
+  "scenario": {
+    "type": "unauthorized_charge",
+    "customerReport": "I don't recognize this charge of ₹4,999 at ABC Store. I never made this purchase.",
+    "transaction": {
+      "id": "txn_unauthorized_001",
+      "customerId": "cust_002",
+      "cardId": "card_002",
+      "amount": -4999,
+      "merchant": "ABC Store",
+      "mcc": "5999",
+      "timestamp": "2025-01-15T14:20:00Z",
+      "deviceId": "dev_002"
+    },
+    "expectedActions": [
+      {
+        "action": "open_dispute",
+        "txnId": "txn_unauthorized_001",
+        "reasonCode": "10.4",
+        "confirm": true,
+        "expectedStatus": "OPEN"
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "high",
+      "recommendation": "open_dispute",
+      "confidence": 0.90,
+      "caseId": "case_unauthorized_001",
+      "finalStatus": "OPEN"
+    }
+  }
 }

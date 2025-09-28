@@ -1,23 +1,45 @@
 {
-  "id": "eval_card_lost",
-  "name": "Card Lost Scenario",
-  "description": "Customer reports lost card, agent should freeze card with OTP verification",
-  "input": {
-    "customerId": "cust_001",
-    "alertType": "card_lost",
-    "description": "Customer called to report lost card",
-    "urgency": "high"
-  },
-  "expectedResult": {
-    "action": "freeze_card",
-    "requiresOtp": true,
-    "riskLevel": "high",
-    "reason": "Card reported as lost by customer"
-  },
-  "testSteps": [
-    "Verify customer identity",
-    "Check recent transactions for unauthorized activity", 
-    "Request OTP for verification",
-    "Freeze card after OTP confirmation"
-  ]
+  "id": "eval_card_lost_001",
+  "name": "Card Lost - Freeze with OTP",
+  "description": "Customer reports lost card, system should freeze card with OTP verification",
+  "customerId": "cust_001",
+  "transactionId": "txn_lost_card_001",
+  "scenario": {
+    "type": "card_lost",
+    "customerReport": "My card was stolen yesterday. Please freeze it immediately.",
+    "transaction": {
+      "id": "txn_lost_card_001",
+      "customerId": "cust_001",
+      "cardId": "card_001",
+      "amount": 0,
+      "merchant": "Card Lost Report",
+      "mcc": "6011",
+      "timestamp": "2025-01-15T10:30:00Z",
+      "deviceId": "dev_001"
+    },
+    "expectedActions": [
+      {
+        "action": "freeze_card",
+        "cardId": "card_001",
+        "requiresOtp": true,
+        "expectedStatus": "PENDING_OTP"
+      },
+      {
+        "action": "generate_otp",
+        "customerId": "cust_001",
+        "phone": "+91-9876543210"
+      },
+      {
+        "action": "validate_otp",
+        "otp": "123456",
+        "expectedStatus": "FROZEN"
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "high",
+      "recommendation": "freeze_card",
+      "confidence": 0.95,
+      "finalStatus": "FROZEN"
+    }
+  }
 }

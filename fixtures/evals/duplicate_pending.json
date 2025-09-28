@@ -1,0 +1,46 @@
+{
+  "id": "eval_duplicate_001",
+  "name": "Duplicate Pending vs Captured",
+  "description": "Customer reports duplicate charge, system should explain difference between pending and captured",
+  "customerId": "cust_003",
+  "transactionId": "txn_duplicate_001",
+  "scenario": {
+    "type": "duplicate_charge",
+    "customerReport": "I see two charges of ₹2,500 at the same store. Is this a duplicate?",
+    "transactions": [
+      {
+        "id": "txn_duplicate_001",
+        "customerId": "cust_003",
+        "cardId": "card_003",
+        "amount": -2500,
+        "merchant": "XYZ Store",
+        "mcc": "5411",
+        "timestamp": "2025-01-15T16:45:00Z",
+        "status": "pending"
+      },
+      {
+        "id": "txn_duplicate_002",
+        "customerId": "cust_003",
+        "cardId": "card_003",
+        "amount": -2500,
+        "merchant": "XYZ Store",
+        "mcc": "5411",
+        "timestamp": "2025-01-15T16:46:00Z",
+        "status": "captured"
+      }
+    ],
+    "expectedActions": [
+      {
+        "action": "explain_duplicate",
+        "explanation": "One transaction is pending (authorization) and one is captured (settled). This is normal processing.",
+        "noDispute": true
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "low",
+      "recommendation": "explain_only",
+      "confidence": 0.85,
+      "finalStatus": "EXPLAINED"
+    }
+  }
+}

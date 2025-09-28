@@ -1,0 +1,63 @@
+{
+  "id": "eval_ambiguous_001",
+  "name": "Ambiguous Merchant Name",
+  "description": "Unclear merchant name - disambiguation prompt with top 2 candidates",
+  "customerId": "cust_012",
+  "transactionId": "txn_ambiguous_001",
+  "scenario": {
+    "type": "ambiguous_merchant",
+    "customerReport": "I don't recognize this charge at 'ABC STORE'.",
+    "transaction": {
+      "id": "txn_ambiguous_001",
+      "customerId": "cust_012",
+      "cardId": "card_012",
+      "amount": -7500,
+      "merchant": "ABC STORE",
+      "mcc": "5999",
+      "timestamp": "2025-01-15T17:45:00Z",
+      "deviceId": "dev_012"
+    },
+    "merchantDisambiguation": {
+      "originalMerchant": "ABC STORE",
+      "candidates": [
+        {
+          "merchant": "ABC Electronics Store",
+          "confidence": 0.85,
+          "location": "Mumbai",
+          "mcc": "5732"
+        },
+        {
+          "merchant": "ABC Grocery Store", 
+          "confidence": 0.75,
+          "location": "Delhi",
+          "mcc": "5411"
+        }
+      ]
+    },
+    "expectedActions": [
+      {
+        "action": "disambiguation_prompt",
+        "message": "I found 2 possible matches for 'ABC STORE'. Which one did you visit?",
+        "candidates": [
+          {
+            "option": "A",
+            "merchant": "ABC Electronics Store",
+            "location": "Mumbai"
+          },
+          {
+            "option": "B", 
+            "merchant": "ABC Grocery Store",
+            "location": "Delhi"
+          }
+        ]
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "medium",
+      "recommendation": "disambiguation_required",
+      "confidence": 0.80,
+      "disambiguationShown": true,
+      "finalStatus": "PENDING_CLARIFICATION"
+    }
+  }
+}

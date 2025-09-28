@@ -1,0 +1,53 @@
+{
+  "id": "eval_device_mcc_001",
+  "name": "Device Change + MCC Anomaly",
+  "description": "New device with unusual MCC pattern - medium risk, contact customer",
+  "customerId": "cust_005",
+  "transactionId": "txn_device_mcc_001",
+  "scenario": {
+    "type": "device_change_mcc",
+    "customerReport": "I'm getting alerts about my recent purchases.",
+    "transaction": {
+      "id": "txn_device_mcc_001",
+      "customerId": "cust_005",
+      "cardId": "card_005",
+      "amount": -35000,
+      "merchant": "Online Casino",
+      "mcc": "7995",
+      "timestamp": "2025-01-15T20:30:00Z",
+      "deviceId": "dev_new_001",
+      "geo": {
+        "lat": 19.0760,
+        "lon": 72.8777,
+        "city": "Mumbai",
+        "country": "IN"
+      }
+    },
+    "deviceHistory": {
+      "previousDevice": "dev_005_trusted",
+      "newDevice": "dev_new_001",
+      "deviceChange": true,
+      "trustedDevice": false
+    },
+    "mccHistory": {
+      "usualMccs": ["5411", "5541", "5812"],
+      "currentMcc": "7995",
+      "anomaly": true
+    },
+    "expectedActions": [
+      {
+        "action": "contact_customer",
+        "customerId": "cust_005",
+        "method": "sms",
+        "reason": "device_change_mcc_anomaly",
+        "template": "device_change_verification"
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "medium",
+      "recommendation": "contact_customer",
+      "confidence": 0.75,
+      "finalStatus": "CONTACTED"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "id": "eval_timeout_001",
+  "name": "Risk Service Timeout",
+  "description": "Risk service timeout - fallback to rule-based, cap at medium risk",
+  "customerId": "cust_007",
+  "transactionId": "txn_timeout_001",
+  "scenario": {
+    "type": "service_timeout",
+    "customerReport": "I'm getting alerts about my transaction.",
+    "transaction": {
+      "id": "txn_timeout_001",
+      "customerId": "cust_007",
+      "cardId": "card_007",
+      "amount": -12000,
+      "merchant": "Gas Station",
+      "mcc": "5541",
+      "timestamp": "2025-01-15T19:45:00Z",
+      "deviceId": "dev_007"
+    },
+    "serviceStatus": {
+      "riskService": "timeout",
+      "timeoutDuration": 5000,
+      "fallbackTriggered": true
+    },
+    "expectedActions": [
+      {
+        "action": "fallback_risk_assessment",
+        "method": "rule_based",
+        "maxRiskLevel": "medium",
+        "reason": "risk_unavailable"
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "medium",
+      "recommendation": "manual_review",
+      "confidence": 0.60,
+      "fallbackReason": "risk_unavailable",
+      "finalStatus": "MANUAL_REVIEW"
+    }
+  }
+}

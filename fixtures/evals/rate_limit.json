@@ -1,0 +1,47 @@
+{
+  "id": "eval_rate_limit_001",
+  "name": "Rate Limit Handling",
+  "description": "Rate limit triggered - 429 response, backoff respected, succeeds on retry",
+  "customerId": "cust_008",
+  "transactionId": "txn_rate_limit_001",
+  "scenario": {
+    "type": "rate_limit",
+    "customerReport": "I'm trying to check my transactions but getting errors.",
+    "transaction": {
+      "id": "txn_rate_limit_001",
+      "customerId": "cust_008",
+      "cardId": "card_008",
+      "amount": -8000,
+      "merchant": "Coffee Shop",
+      "mcc": "5812",
+      "timestamp": "2025-01-15T21:00:00Z",
+      "deviceId": "dev_008"
+    },
+    "rateLimitScenario": {
+      "initialRequest": "rate_limited",
+      "responseCode": 429,
+      "retryAfter": 2000,
+      "backoffApplied": true,
+      "retrySuccess": true
+    },
+    "expectedActions": [
+      {
+        "action": "rate_limit_response",
+        "statusCode": 429,
+        "retryAfterMs": 2000,
+        "message": "Rate limit exceeded"
+      },
+      {
+        "action": "retry_after_backoff",
+        "backoffDuration": 2000,
+        "success": true
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "low",
+      "recommendation": "allow",
+      "confidence": 0.80,
+      "finalStatus": "ALLOWED"
+    }
+  }
+}

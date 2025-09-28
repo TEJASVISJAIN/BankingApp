@@ -1,193 +1,176 @@
-# Demo Video Script: Aegis Support Fraud Detection System
+# Demo Video Script - Aegis Banking Fraud Detection System
 
-## 🎬 Video Overview
-**Duration**: 8-10 minutes  
-**Target Audience**: Banking executives, security teams, technical stakeholders  
-**Focus**: Production-ready fraud detection with multi-agent AI
+## Overview
+This script demonstrates 3 key scenarios showcasing the multi-agent fraud detection system, including one fallback scenario and one policy block scenario.
 
----
-
-## 📝 Script Outline
-
-### 1. Introduction (0:00 - 1:00)
-**Visual**: System architecture diagram, logo animation
-
-**Narration**:
-> "Welcome to Aegis Support, a production-ready fraud detection system for banking operations. Today we'll demonstrate how our multi-agent AI system helps care agents detect, analyze, and respond to fraudulent activities in real-time."
-
-**Key Points**:
-- Multi-agent AI system
-- Real-time fraud detection
-- Production-ready architecture
-- Banking-grade security
-
-### 2. System Architecture (1:00 - 2:00)
-**Visual**: Architecture diagram, component highlights
-
-**Narration**:
-> "Aegis Support consists of three main components: a React-based frontend dashboard, an Express.js backend with multi-agent orchestration, and a PostgreSQL database with Redis caching. The system processes over 1 million transactions with sub-100ms response times."
-
-**Demo Actions**:
-- Show architecture diagram
-- Highlight key components
-- Display performance metrics
-
-### 3. Dashboard Overview (2:00 - 3:30)
-**Visual**: Dashboard screen, KPIs, real-time data
-
-**Narration**:
-> "The dashboard provides real-time insights into fraud detection activities. Here we can see total spend, high-risk alerts, disputes opened, and average triage time. The system processes transactions in real-time and flags suspicious activities for review."
-
-**Demo Actions**:
-- Navigate dashboard
-- Show KPIs updating
-- Highlight real-time nature
-- Demonstrate filtering
-
-### 4. Fraud Triage Process (3:30 - 6:00)
-**Visual**: Triage drawer, agent execution, real-time updates
-
-**Narration**:
-> "When a suspicious transaction is detected, our multi-agent system springs into action. Let's examine a high-risk transaction flagged by our fraud detection engine."
-
-**Demo Actions**:
-- Click on high-risk alert
-- Open triage drawer
-- Show agent execution steps
-- Display real-time updates
-- Demonstrate KB citations
-
-**Key Features to Highlight**:
-- Multi-agent orchestration
-- Real-time SSE updates
-- Knowledge base integration
-- Risk assessment reasoning
-- Action recommendations
-
-### 5. Agent Execution Details (6:00 - 7:30)
-**Visual**: Agent steps, reasoning, fallbacks
-
-**Narration**:
-> "Our orchestrator coordinates multiple specialized agents. The fraud agent analyzes risk signals, the KB agent searches for relevant policies, and the compliance agent ensures regulatory requirements are met. Each step is logged and can be audited."
-
-**Demo Actions**:
-- Show agent execution steps
-- Display reasoning chains
-- Highlight fallback mechanisms
-- Show compliance checks
-
-### 6. Action Execution (7:30 - 8:30)
-**Visual**: Action buttons, OTP flow, confirmation
-
-**Narration**:
-> "Based on the analysis, the system recommends specific actions. For high-risk transactions, we can freeze cards, open disputes, or contact customers. All actions require proper authorization and are logged for audit purposes."
-
-**Demo Actions**:
-- Show action recommendations
-- Demonstrate OTP flow
-- Execute card freeze
-- Show audit trail
-
-### 7. Performance & Security (8:30 - 9:30)
-**Visual**: Performance metrics, security features
-
-**Narration**:
-> "Aegis Support meets enterprise-grade performance and security requirements. The system processes over 1 million transactions with P95 latency under 100ms, includes comprehensive PII redaction, and provides full observability with metrics, logs, and traces."
-
-**Demo Actions**:
-- Show performance metrics
-- Demonstrate PII redaction
-- Display observability features
-- Highlight security measures
-
-### 8. Conclusion (9:30 - 10:00)
-**Visual**: System summary, key benefits
-
-**Narration**:
-> "Aegis Support provides a complete fraud detection solution with multi-agent AI, real-time processing, and enterprise-grade security. The system is production-ready and can be deployed immediately to protect your banking operations."
-
-**Key Benefits**:
-- Production-ready deployment
-- Multi-agent AI intelligence
-- Real-time fraud detection
-- Enterprise security
-- Comprehensive observability
+**Duration**: 8-10 minutes
+**Format**: Screen recording with voiceover
 
 ---
 
-## 🎥 Production Notes
+## Scene 1: Introduction (1 minute)
 
-### Technical Requirements
-- **Resolution**: 1920x1080 minimum
-- **Frame Rate**: 30fps
-- **Audio**: Clear narration, no background music
-- **Format**: MP4, H.264 encoding
+### Visual: System Overview Dashboard
+**Voiceover**: "Welcome to the Aegis Banking Fraud Detection System. This is a multi-agent AI system designed to detect and triage fraud in real-time. Let me show you the key components."
 
-### Recording Setup
-- **Screen Recording**: OBS Studio or similar
-- **Audio**: Professional microphone
-- **Lighting**: Good lighting for presenter
-- **Background**: Clean, professional setting
-
-### Post-Production
-- **Editing**: Adobe Premiere Pro or similar
-- **Graphics**: Animated diagrams and highlights
-- **Transitions**: Smooth, professional
-- **Captions**: Optional for accessibility
-
-### Accessibility Features
-- **Closed Captions**: Full transcript
-- **Audio Description**: Visual elements described
-- **High Contrast**: Clear visual elements
-- **Slow Motion**: Complex actions slowed down
+### Key Points to Highlight:
+- **Dashboard**: Show KPIs (Total Spend: ₹34.5B, Transactions: 1M, High Risk Alerts: 60K)
+- **Architecture**: Multi-agent orchestration with specialized agents
+- **Real-time Processing**: 5-second timeout for fraud decisions
 
 ---
 
-## 📋 Demo Checklist
+## Scene 2: Scenario 1 - Card Lost with OTP (3 minutes)
 
-### Pre-Recording
-- [ ] System fully functional
-- [ ] Test data loaded
-- [ ] All services running
-- [ ] Performance optimized
-- [ ] Security features enabled
+### Visual: Customer Reports Lost Card
+**Voiceover**: "Let's start with a common scenario - a customer reports their card as lost."
 
-### During Recording
-- [ ] Clear narration
-- [ ] Smooth transitions
-- [ ] No technical errors
-- [ ] Professional presentation
-- [ ] Key features highlighted
+### Demo Flow:
+1. **Customer Report**: Show customer message: "My card was stolen yesterday. Please freeze it immediately."
+2. **Agent Orchestration**: 
+   - Show plan_built event: ["getProfile", "getRecentTransactions", "riskSignals", "decide", "proposeAction"]
+   - Show tool_update events for each agent
+3. **Fraud Agent Analysis**: 
+   - Risk score: 0.95 (high)
+   - Recommendation: freeze_card
+   - Requires OTP verification
+4. **Action Execution**:
+   - Generate OTP: "123456"
+   - Send to customer phone
+   - Validate OTP
+   - Freeze card with status: "FROZEN"
+5. **Final Assessment**: Show decision_finalized event with complete trace
 
-### Post-Recording
-- [ ] Video edited
-- [ ] Audio cleaned
-- [ ] Graphics added
-- [ ] Captions included
-- [ ] Quality checked
-
----
-
-## 🎯 Key Messages
-
-1. **Production Ready**: System is enterprise-grade and deployable
-2. **AI-Powered**: Multi-agent intelligence for fraud detection
-3. **Real-Time**: Immediate response to suspicious activities
-4. **Secure**: Banking-grade security and compliance
-5. **Observable**: Complete monitoring and audit capabilities
+### Key Features to Highlight:
+- **Real-time SSE**: Show streaming updates in triage drawer
+- **Multi-agent Coordination**: Each agent has specialized expertise
+- **Security**: OTP verification for sensitive operations
+- **Traceability**: Complete audit trail of agent decisions
 
 ---
 
-## 📊 Success Metrics
+## Scene 3: Scenario 2 - Service Timeout Fallback (3 minutes)
 
-- **Engagement**: High viewer retention
-- **Clarity**: Clear understanding of capabilities
-- **Professional**: Enterprise-ready presentation
-- **Comprehensive**: All key features demonstrated
-- **Accessible**: Inclusive for all audiences
+### Visual: Risk Service Timeout
+**Voiceover**: "Now let's see how the system handles service failures with intelligent fallbacks."
+
+### Demo Flow:
+1. **Initial Request**: Customer transaction with suspicious pattern
+2. **Service Timeout**: 
+   - Show risk service timeout after 5 seconds
+   - Display fallback_triggered event
+   - Reason: "risk_unavailable"
+3. **Rule-based Fallback**:
+   - Show fallback to deterministic rules
+   - Risk level capped at "medium" (not high)
+   - Template-based response
+4. **Final Decision**:
+   - Status: "MANUAL_REVIEW"
+   - Reason includes "risk_unavailable"
+   - Confidence: 0.60 (lower due to fallback)
+
+### Key Features to Highlight:
+- **Circuit Breakers**: Automatic fallback on service failure
+- **Graceful Degradation**: System continues to function
+- **Transparency**: Clear indication of fallback reason
+- **Compliance**: Banking regulations require 99.9% uptime
 
 ---
 
-**Total Video Length**: 10 minutes  
-**Target Completion**: 2-3 hours recording + 4-6 hours editing  
-**Final Deliverable**: Professional demo video showcasing Aegis Support capabilities
+## Scene 4: Scenario 3 - Policy Block (3 minutes)
+
+### Visual: Unauthorized Unfreeze Attempt
+**Voiceover**: "Finally, let's see how the system enforces security policies and blocks unauthorized actions."
+
+### Demo Flow:
+1. **Policy Violation**: Customer attempts to unfreeze card without identity verification
+2. **Compliance Agent Check**:
+   - Show policy evaluation
+   - Identity verification: false
+   - Policy violation: "unfreeze_without_identity"
+3. **Policy Block**:
+   - Action: "deny"
+   - Reason: "unfreeze_without_identity"
+   - Handoff required: true
+4. **Human Handoff**:
+   - Escalate to senior agent
+   - Manual review required
+   - Security audit trail
+
+### Key Features to Highlight:
+- **Policy Enforcement**: Automated security policy checking
+- **Security**: Prevents unauthorized actions
+- **Audit Trail**: Complete logging of policy violations
+- **Human Oversight**: Escalation for complex cases
+
+---
+
+## Scene 5: System Metrics & Observability (1 minute)
+
+### Visual: Metrics Dashboard
+**Voiceover**: "Let's look at the system's observability and performance metrics."
+
+### Key Metrics to Show:
+1. **Performance Metrics**:
+   - Agent latency: P50: 1.2s, P95: 3.8s
+   - Success rate: 94.2%
+   - Fallback rate: 5.8%
+
+2. **Security Metrics**:
+   - PII redaction: 100% effective
+   - Policy blocks: 12 this week
+   - Rate limit hits: 0.1%
+
+3. **System Health**:
+   - Database: Healthy
+   - Redis: Healthy
+   - All services: Operational
+
+### Key Features to Highlight:
+- **Real-time Monitoring**: Live metrics and health checks
+- **Performance Tracking**: Latency and success rates
+- **Security Metrics**: PII protection and policy enforcement
+- **Operational Excellence**: 99.9% uptime target
+
+---
+
+## Scene 6: Conclusion (1 minute)
+
+### Visual: System Architecture Diagram
+**Voiceover**: "The Aegis system demonstrates how multi-agent AI can be safely deployed in banking environments."
+
+### Key Takeaways:
+1. **Multi-Agent Orchestration**: Specialized agents working together
+2. **Real-time Processing**: 5-second fraud decisions
+3. **Robust Fallbacks**: System continues during failures
+4. **Security First**: Policy enforcement and PII protection
+5. **Full Observability**: Complete audit trails and metrics
+
+### Call to Action:
+- **GitHub**: [Repository link]
+- **Documentation**: Full ADR and technical specs
+- **Evaluation**: Run `npm run eval` for comprehensive testing
+
+---
+
+## Technical Notes for Recording:
+
+### Screen Setup:
+- **Main Screen**: Application dashboard and triage interface
+- **Secondary Screen**: Terminal with logs and metrics
+- **Recording**: 1920x1080, 30fps
+
+### Audio:
+- **Microphone**: Clear, professional voiceover
+- **Background**: Minimal, non-distracting
+- **Pace**: Moderate, clear pronunciation
+
+### Timing:
+- **Total Duration**: 8-10 minutes
+- **Scene Transitions**: Smooth, 2-3 seconds
+- **Pauses**: Natural breathing points
+
+### Post-Production:
+- **Intro/Outro**: 5-second fade in/out
+- **Captions**: Key technical terms highlighted
+- **Quality Check**: Audio levels, video clarity, timing

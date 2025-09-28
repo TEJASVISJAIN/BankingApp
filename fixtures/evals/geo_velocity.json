@@ -1,23 +1,59 @@
 {
-  "id": "eval_geo_velocity",
+  "id": "eval_geo_velocity_001",
   "name": "Geo-Velocity Alert",
-  "description": "Impossible travel detected - Delhi to New York in 30 minutes",
-  "input": {
-    "customerId": "cust_003", 
-    "alertType": "geo_velocity",
-    "description": "Transaction in Delhi at 10:10, then New York at 10:40",
-    "urgency": "high"
-  },
-  "expectedResult": {
-    "action": "freeze_card",
-    "requiresOtp": false,
-    "riskLevel": "high", 
-    "reason": "Impossible travel detected - potential fraud"
-  },
-  "testSteps": [
-    "Analyze transaction locations and timestamps",
-    "Calculate travel time between locations",
-    "Check for impossible travel patterns",
-    "Recommend card freeze due to high risk"
-  ]
+  "description": "Impossible travel detected - Delhi at 10:10, New York at 10:40",
+  "customerId": "cust_004",
+  "transactionId": "txn_geo_velocity_001",
+  "scenario": {
+    "type": "geo_velocity",
+    "customerReport": "I'm getting fraud alerts for transactions I didn't make.",
+    "transactions": [
+      {
+        "id": "txn_geo_velocity_001",
+        "customerId": "cust_004",
+        "cardId": "card_004",
+        "amount": -15000,
+        "merchant": "Delhi Metro",
+        "mcc": "4111",
+        "timestamp": "2025-01-15T10:10:00Z",
+        "deviceId": "dev_004",
+        "geo": {
+          "lat": 28.6139,
+          "lon": 77.2090,
+          "city": "Delhi",
+          "country": "IN"
+        }
+      },
+      {
+        "id": "txn_geo_velocity_002",
+        "customerId": "cust_004",
+        "cardId": "card_004",
+        "amount": -50000,
+        "merchant": "NYC Taxi",
+        "mcc": "4121",
+        "timestamp": "2025-01-15T10:40:00Z",
+        "deviceId": "dev_005",
+        "geo": {
+          "lat": 40.7128,
+          "lon": -74.0060,
+          "city": "New York",
+          "country": "US"
+        }
+      }
+    ],
+    "expectedActions": [
+      {
+        "action": "freeze_card",
+        "cardId": "card_004",
+        "reason": "impossible_travel",
+        "expectedStatus": "FROZEN"
+      }
+    ],
+    "expectedOutcome": {
+      "riskLevel": "high",
+      "recommendation": "freeze_card",
+      "confidence": 0.98,
+      "finalStatus": "FROZEN"
+    }
+  }
 }
