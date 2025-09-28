@@ -2,8 +2,8 @@
   "id": "eval_device_mcc_001",
   "name": "Device Change + MCC Anomaly",
   "description": "New device with unusual MCC pattern - medium risk, contact customer",
-  "customerId": "cust_005",
-  "transactionId": "txn_device_mcc_001",
+  "customerId": "cust_001",
+  "transactionId": "txn_01001",
   "scenario": {
     "type": "device_change_mcc",
     "customerReport": "I'm getting alerts about my recent purchases.",

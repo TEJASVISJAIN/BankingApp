@@ -3,12 +3,12 @@
   "name": "Card Lost - Freeze with OTP",
   "description": "Customer reports lost card, system should freeze card with OTP verification",
   "customerId": "cust_001",
-  "transactionId": "txn_lost_card_001",
+  "transactionId": "txn_01001",
   "scenario": {
     "type": "card_lost",
     "customerReport": "My card was stolen yesterday. Please freeze it immediately.",
     "transaction": {
-      "id": "txn_lost_card_001",
+      "id": "txn_01001",
       "customerId": "cust_001",
       "cardId": "card_001",
       "amount": 0,

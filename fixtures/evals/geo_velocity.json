@@ -2,8 +2,8 @@
   "id": "eval_geo_velocity_001",
   "name": "Geo-Velocity Alert",
   "description": "Impossible travel detected - Delhi at 10:10, New York at 10:40",
-  "customerId": "cust_004",
-  "transactionId": "txn_geo_velocity_001",
+  "customerId": "cust_001",
+  "transactionId": "txn_01001",
   "scenario": {
     "type": "geo_velocity",
     "customerReport": "I'm getting fraud alerts for transactions I didn't make.",

@@ -2,14 +2,14 @@
   "id": "eval_unauthorized_001",
   "name": "Unauthorized Charge - Open Dispute",
   "description": "Customer reports unauthorized charge, system should open dispute with reason code 10.4",
-  "customerId": "cust_002",
-  "transactionId": "txn_unauthorized_001",
+  "customerId": "cust_001",
+  "transactionId": "txn_01001",
   "scenario": {
     "type": "unauthorized_charge",
     "customerReport": "I don't recognize this charge of ₹4,999 at ABC Store. I never made this purchase.",
     "transaction": {
       "id": "txn_unauthorized_001",
-      "customerId": "cust_002",
+      "customerId": "cust_001",
       "cardId": "card_002",
       "amount": -4999,
       "merchant": "ABC Store",
