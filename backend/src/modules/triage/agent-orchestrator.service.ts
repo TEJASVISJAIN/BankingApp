@@ -237,7 +237,17 @@ export class AgentOrchestratorService extends EventEmitter {
 
       // Step 3: Risk Signals
       const riskSignalsStep = await this.executeStep(sessionId, 'riskSignals', 'Analyze risk signals', async () => {
-        return await this.analyzeRiskSignals(profileStep.output, transactionsStep.output, request.transactionId);
+        return await this.fraudAgent.assessFraud({
+          transactionId: request.transactionId,
+          customerId: request.customerId,
+          cardId: transactionsStep.output.current?.cardId,
+          amount: transactionsStep.output.current?.amount,
+          merchant: transactionsStep.output.current?.merchant,
+          mcc: transactionsStep.output.current?.mcc,
+          timestamp: new Date(transactionsStep.output.current?.timestamp),
+          deviceId: transactionsStep.output.current?.deviceId,
+          geo: transactionsStep.output.current?.geo
+        });
       });
 
       if (riskSignalsStep.status === 'failed') {
@@ -680,7 +690,7 @@ export class AgentOrchestratorService extends EventEmitter {
         riskLevel: riskSignals.riskLevel,
         riskScore: riskSignals.riskScore,
         confidence: riskSignals.confidence,
-        reasoning: riskSignals.signals.map(s => s.description),
+        reasoning: riskSignals.reasoning || riskSignals.signals?.map(s => s.description) || [],
         recommendation: this.getRecommendation(riskSignals.riskLevel),
         requiresReview: riskSignals.riskLevel === 'high',
         autoApprove: riskSignals.riskLevel === 'low',
