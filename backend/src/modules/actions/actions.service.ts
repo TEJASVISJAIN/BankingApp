@@ -86,13 +86,8 @@ export class ActionsService {
         customerId: transaction.customerId,
         transactionId: txnId,
         amount: transaction.amount,
-        currency: transaction.currency,
         reason: reasonCode,
         status: 'pending',
-        merchant: transaction.merchant,
-        mcc: transaction.mcc,
-        disputeDate: new Date(),
-        evidence: {},
       });
 
       // Log action

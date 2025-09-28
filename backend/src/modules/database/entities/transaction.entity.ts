@@ -35,11 +35,9 @@ export class Transaction {
   @Column({ name: 'device_id', nullable: true })
   deviceId: string;
 
-  @Column({ name: 'deviceinfo', type: 'jsonb', nullable: true })
-  deviceInfo: any;
+  @Column({ name: 'geo', type: 'jsonb', nullable: true })
+  geo: any;
 
-  @Column({ type: 'jsonb', nullable: true })
-  metadata: any;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

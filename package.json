@@ -29,5 +29,8 @@
     "frontend",
     "backend",
     "scripts"
-  ]
+  ],
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
 }

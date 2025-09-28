@@ -15,32 +15,11 @@ export class Chargeback {
   @Column({ type: 'bigint' })
   amount: number;
 
-  @Column()
-  currency: string;
-
   @Column({ name: 'reason_code' })
   reason: string;
 
   @Column()
   status: string;
-
-  @Column()
-  merchant: string;
-
-  @Column()
-  mcc: string;
-
-  @Column({ name: 'disputedate', type: 'timestamp' })
-  disputeDate: Date;
-
-  @Column({ name: 'resolutiondate', type: 'timestamp', nullable: true })
-  resolutionDate: Date;
-
-  @Column({ nullable: true })
-  resolution: string;
-
-  @Column({ type: 'jsonb', nullable: true })
-  evidence: any;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

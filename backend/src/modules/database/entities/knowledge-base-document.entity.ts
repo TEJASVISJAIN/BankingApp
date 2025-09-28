@@ -11,18 +11,15 @@ export class KnowledgeBaseDocument {
   @Column({ type: 'text' })
   content: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  metadata: any;
+  @Column({ nullable: true })
+  anchor: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  tags: string[];
+  chunks: any;
 
-  @Column({ default: 0 })
-  viewCount: number;
-
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

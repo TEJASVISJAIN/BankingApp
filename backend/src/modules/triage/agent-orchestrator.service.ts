@@ -437,7 +437,7 @@ export class AgentOrchestratorService extends EventEmitter {
         mcc: transaction.mcc,
         timestamp: transaction.timestamp,
         deviceId: transaction.deviceId,
-        geo: transaction.deviceInfo,
+        geo: transaction.geo,
         customer: {
           id: customer.id,
           name: customer.name,
@@ -505,9 +505,7 @@ export class AgentOrchestratorService extends EventEmitter {
         id: customer.id,
         name: customer.name,
         email: customer.email,
-        phone: customer.phone,
         riskFlags: customer.riskFlags,
-        preferences: customer.preferences,
         createdAt: customer.createdAt,
       };
     } catch (error) {

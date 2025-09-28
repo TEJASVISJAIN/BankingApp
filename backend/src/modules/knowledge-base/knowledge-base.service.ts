@@ -9,7 +9,6 @@ export interface SearchSnippet {
   snippet: string;
   anchor: string;
   relevanceScore: number;
-  metadata: any;
 }
 
 @Injectable()
@@ -85,11 +84,6 @@ export class KnowledgeBaseService {
           snippet,
           anchor,
           relevanceScore,
-          metadata: {
-            ...doc.metadata,
-            sourceDocument: doc.id,
-            snippetIndex: snippets.length,
-          },
         });
       }
     }
@@ -149,7 +143,6 @@ export class KnowledgeBaseService {
     title: string;
     content: string;
     anchors: Array<{ anchor: string; text: string; position: number }>;
-    metadata: any;
   }> {
     try {
       const doc = await this.databaseService.findKnowledgeBaseDocumentById(documentId);
@@ -164,7 +157,6 @@ export class KnowledgeBaseService {
         title: doc.title,
         content: doc.content,
         anchors,
-        metadata: doc.metadata,
       };
     } catch (error) {
       secureLogger.error('Failed to get document with anchors', { documentId, error: error.message });

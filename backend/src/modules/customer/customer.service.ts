@@ -13,7 +13,6 @@ export class CustomerService {
         id: customer.id,
         name: customer.name,
         email: customer.email,
-        phone: customer.phone,
         riskFlags: customer.riskFlags,
         createdAt: customer.createdAt,
       }));
@@ -34,9 +33,7 @@ export class CustomerService {
         id: customer.id,
         name: customer.name,
         email: customer.email,
-        phone: customer.phone,
         riskFlags: customer.riskFlags,
-        preferences: customer.preferences,
         createdAt: customer.createdAt,
         updatedAt: customer.updatedAt,
       };
@@ -82,8 +79,7 @@ export class CustomerService {
           mcc: transaction.mcc,
           timestamp: transaction.timestamp.toISOString(),
           deviceId: transaction.deviceId,
-          deviceInfo: transaction.deviceInfo,
-          metadata: transaction.metadata,
+          geo: transaction.geo,
           createdAt: transaction.createdAt,
         })),
         pagination: {

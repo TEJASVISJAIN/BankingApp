@@ -89,7 +89,7 @@ export class DashboardService {
           riskScore: riskScore,
           status: this.getRandomStatus(),
           lastFour: '****', // We'll get this from card lookup if needed
-          location: txn.deviceInfo?.location || 'Unknown',
+          location: txn.geo?.city || 'Unknown',
         };
       });
 

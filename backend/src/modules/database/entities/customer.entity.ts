@@ -16,14 +16,10 @@ export class Customer {
   @Column({ name: 'email_masked' })
   email: string;
 
-  @Column({ nullable: true })
-  phone: string;
 
   @Column({ name: 'risk_flags', type: 'jsonb', nullable: true })
   riskFlags: any;
 
-  @Column({ type: 'jsonb', nullable: true })
-  preferences: any;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

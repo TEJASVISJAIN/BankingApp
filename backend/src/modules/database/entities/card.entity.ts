@@ -18,8 +18,6 @@ export class Card {
   @Column()
   status: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  metadata: any;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
