@@ -8,8 +8,11 @@ A comprehensive fraud detection and triage system built with NestJS, React, and 
 # 1. Start the entire system
 docker-compose up -d
 
-# 2. Populate with test data
-npm run seed
+# 2. Populate with test data (choose one)
+npm run seed-quick    # Fast development seeding (5 seconds)
+npm run seed         # Full fixtures seeding (10 seconds)
+npm run seed-small   # Generated data (1 minute)
+npm run seed-large   # Production-scale data (10-15 minutes)
 
 # 3. Run evaluations
 npm run eval

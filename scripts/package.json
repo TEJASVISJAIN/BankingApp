@@ -4,7 +4,10 @@
   "description": "Aegis Support Data Generation and Evaluation Scripts",
   "main": "index.js",
   "scripts": {
-    "seed": "ts-node src/seed.ts",
+    "seed": "ts-node src/seed-fixtures.ts",
+    "seed-fixtures": "ts-node src/seed-fixtures.ts",
+    "seed-quick": "ts-node src/seed-quick.ts",
+    "seed-large": "ts-node src/seed.ts",
     "seed-small": "ts-node src/seed-small.ts",
     "eval": "ts-node src/eval-cli.ts",
     "optimize": "ts-node src/optimize.ts",

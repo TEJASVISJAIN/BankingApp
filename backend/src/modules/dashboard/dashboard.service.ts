@@ -67,7 +67,7 @@ export class DashboardService {
       const highRiskTransactions = await this.transactionRepository
         .createQueryBuilder('transaction')
         .leftJoinAndSelect('transaction.customer', 'customer')
-        .where('transaction.amount > :threshold', { threshold: 50000 }) // > 500 INR
+        .where('ABS(transaction.amount) > :threshold', { threshold: 5000 }) // > 50 INR (using absolute value)
         .orderBy('transaction.timestamp', 'DESC')
         .limit(20)
         .getMany();

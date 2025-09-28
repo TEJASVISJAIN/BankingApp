@@ -90,12 +90,13 @@ function CustomerListPage() {
           riskScore: alert.riskScore || 0,
           riskLevel: alert.riskLevel || 'low',
           lastTransaction: alert.timestamp,
-          transactionCount: 1,
+          transactionCount: alert.transactionCount || 1,
           totalAmount: alert.amount || 0,
         })
       } else {
         const existing = customerMap.get(alert.customerId)
-        existing.transactionCount += 1
+        // Use the actual transaction count from the API, don't increment
+        existing.transactionCount = alert.transactionCount || existing.transactionCount
         existing.totalAmount += alert.amount || 0
         if (new Date(alert.timestamp) > new Date(existing.lastTransaction)) {
           existing.lastTransaction = alert.timestamp
