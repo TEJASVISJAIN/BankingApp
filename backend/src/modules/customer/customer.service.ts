@@ -29,6 +29,9 @@ export class CustomerService {
         throw new NotFoundException('Customer not found');
       }
 
+      // Get transaction count for consistency with other views
+      const transactionCount = await this.databaseService.getTransactionCountByCustomer(id);
+
       return {
         id: customer.id,
         name: customer.name,
@@ -36,6 +39,7 @@ export class CustomerService {
         riskFlags: customer.riskFlags,
         createdAt: customer.createdAt,
         updatedAt: customer.updatedAt,
+        transactionCount: transactionCount,
       };
     } catch (error) {
       secureLogger.error('Failed to get customer', { id, error: error.message });
@@ -63,8 +67,8 @@ export class CustomerService {
       // Get total count for proper pagination
       const totalCount = await this.databaseService.getTransactionCountByCustomer(id);
       
-      // Use 90-day optimized query for better performance
-      const transactions = await this.databaseService.findTransactionsByCustomerLast90Days(id, limit, offset);
+      // Get all transactions for consistency with insights and reports
+      const transactions = await this.databaseService.findTransactionsByCustomer(id, limit, offset);
       
       const duration = Date.now() - startTime;
       secureLogger.info('Customer transactions query completed', {

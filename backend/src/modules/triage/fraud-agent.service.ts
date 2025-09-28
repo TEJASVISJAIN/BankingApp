@@ -154,15 +154,11 @@ export class FraudAgentService {
       // Generate enhanced reasoning using Groq
       let reasoning: string[];
       try {
-        const groqRiskSummary = await this.groqService.generateRiskSummary(
-          validSignals,
-          customerData.customer,
-          context
-        );
+        const prompt = `Analyze these risk signals: ${JSON.stringify(validSignals)} for customer ${customerData.customer.name}. Context: ${JSON.stringify(context)}`;
+        const groqResponse = await this.groqService.generateResponse(prompt);
         reasoning = [
-          groqRiskSummary.riskSummary,
-          groqRiskSummary.explanation,
-          ...groqRiskSummary.recommendations
+          groqResponse,
+          'AI-generated risk analysis'
         ];
       } catch (error) {
         secureLogger.warn('Groq risk summary failed, using fallback', { error: error.message });

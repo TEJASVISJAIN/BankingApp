@@ -108,12 +108,14 @@ export class InsightsAgentService {
       ];
       
       // Generate LLM-enhanced insights using Groq
-      const groqInsights = await this.groqService.generateCustomerInsights(
-        customerId,
-        spendingData,
-        behavioralInsights,
-        allRiskFactors
-      );
+      const prompt = `Generate customer insights for customer ${customerId}. Spending data: ${JSON.stringify(spendingData)}. Behavioral insights: ${JSON.stringify(behavioralInsights)}. Risk factors: ${JSON.stringify(allRiskFactors)}`;
+      const groqResponse = await this.groqService.generateResponse(prompt);
+      const groqInsights = {
+        summary: groqResponse,
+        keyFindings: ['AI-generated key findings'],
+        recommendations: ['AI-generated recommendations based on analysis'],
+        riskAssessment: 'AI-generated risk assessment'
+      };
       
       return {
         summary: {
