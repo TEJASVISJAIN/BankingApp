@@ -46,6 +46,11 @@ services:
       - DB_NAME=aegis_support
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - API_KEY_SECRET=aegis_secret_key_development
+      - LLM_ENABLED=false
+      - LLM_PROVIDER=groq
+      - LLM_FALLBACK_MODE=deterministic
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -64,6 +69,8 @@ services:
     container_name: aegis-frontend
     ports:
       - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:3001
     depends_on:
       - backend
     healthcheck:
