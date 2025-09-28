@@ -9,7 +9,7 @@ export class InsightsService {
   async getCustomerInsights(customerId: string) {
     try {
       const customer = await this.databaseService.findCustomerById(customerId);
-      const transactions = await this.databaseService.findTransactionsByCustomer(customerId, 50);
+      const transactions = await this.databaseService.findTransactionsByCustomerLast90Days(customerId, 50, 0);
       const chargebacks = await this.databaseService.findChargebacksByCustomer(customerId);
 
       // Calculate top merchants
@@ -206,21 +206,25 @@ export class InsightsService {
     
     // Base risk factors
     const totalSpend = transactions.reduce((sum, t) => sum + t.amount, 0);
-    const avgTransactionAmount = totalSpend / transactions.length;
+    const avgTransactionAmount = Math.abs(totalSpend) / transactions.length;
     
     // High transaction amounts increase risk
     if (avgTransactionAmount > 50000) { // ₹500+
       riskScore += 20;
     } else if (avgTransactionAmount > 25000) { // ₹250+
       riskScore += 10;
+    } else if (avgTransactionAmount > 10000) { // ₹100+
+      riskScore += 5;
     }
     
-    // High transaction frequency increases risk
+    // Transaction frequency risk (adjusted for smaller datasets)
     const transactionCount = transactions.length;
     if (transactionCount > 100) {
       riskScore += 15;
     } else if (transactionCount > 50) {
       riskScore += 8;
+    } else if (transactionCount > 10) {
+      riskScore += 3;
     }
     
     // Chargebacks significantly increase risk
@@ -228,19 +232,26 @@ export class InsightsService {
       riskScore += chargebacks.length * 25; // Each chargeback adds 25 points
     }
     
-    // Recent high-value transactions
+    // Recent high-value transactions (adjusted thresholds)
     const recentTransactions = transactions.filter(t => {
-      const transactionDate = new Date(t.ts);
+      const transactionDate = new Date(t.timestamp);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       return transactionDate > thirtyDaysAgo;
     });
     
-    const recentHighValue = recentTransactions.filter(t => t.amount > 100000).length; // ₹1000+
+    const recentHighValue = recentTransactions.filter(t => Math.abs(t.amount) > 100000).length; // ₹1000+
     if (recentHighValue > 5) {
       riskScore += 20;
     } else if (recentHighValue > 2) {
       riskScore += 10;
+    } else if (recentHighValue > 0) {
+      riskScore += 5;
+    }
+    
+    // Add base risk for any transactions
+    if (transactionCount > 0) {
+      riskScore += 5; // Base risk for having transactions
     }
     
     // Cap risk score at 100

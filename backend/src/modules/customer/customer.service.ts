@@ -45,8 +45,8 @@ export class CustomerService {
 
   async getCustomerTransactions(
     id: string, 
-    page = 1, 
-    size = 20, 
+    page: any = 1, 
+    size: any = 20, 
     from?: string, 
     to?: string, 
     merchant?: string, 
@@ -54,8 +54,11 @@ export class CustomerService {
   ) {
     const startTime = Date.now();
     try {
-      const limit = size;
-      const offset = (page - 1) * size;
+      // Convert string parameters to numbers
+      const pageNum = parseInt(page) || 1;
+      const sizeNum = parseInt(size) || 20;
+      const limit = sizeNum;
+      const offset = (pageNum - 1) * sizeNum;
       
       // Use 90-day optimized query for better performance
       const transactions = await this.databaseService.findTransactionsByCustomerLast90Days(id, limit, offset);
