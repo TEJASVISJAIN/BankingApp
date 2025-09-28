@@ -135,11 +135,21 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
     severity: 'success' | 'error' | 'warning' | 'info';
   }>({ open: false, message: '', severity: 'info' });
 
-  // Function to check for existing disputes
+  // Track dispute status to prevent infinite calls
+  const [disputeStatusChecked, setDisputeStatusChecked] = useState(false);
+  const [isCheckingDisputes, setIsCheckingDisputes] = useState(false);
+  
+  // Function to check for existing disputes - only call once per transaction
   const checkDisputeStatus = useCallback(async () => {
-    if (!transactionId) return;
+    if (!transactionId || isCheckingDisputes || disputeStatusChecked) {
+      console.log('Skipping dispute check - already checked or in progress');
+      return;
+    }
     
     try {
+      setIsCheckingDisputes(true);
+      setDisputeStatusChecked(true);
+      console.log('Fetching disputes for transaction:', transactionId);
       const disputes = await apiService.getDisputes();
       const existingDispute = disputes.find(dispute => dispute.transactionId === transactionId);
       
@@ -158,8 +168,11 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
       }
     } catch (error) {
       console.error('Failed to check dispute status:', error);
+      setDisputeStatusChecked(false); // Reset on error to allow retry
+    } finally {
+      setIsCheckingDisputes(false);
     }
-  }, [transactionId]);
+  }, [transactionId, isCheckingDisputes, disputeStatusChecked]);
 
   // Function to check card status
   const checkCardStatus = useCallback(async () => {
@@ -182,13 +195,19 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
     }
   }, [assessment?.transaction?.cardId]);
 
-  // Check dispute status and card status when assessment is loaded
+  // Reset dispute status check when transaction changes
   useEffect(() => {
-    if (assessment && transactionId) {
+    setDisputeStatusChecked(false);
+  }, [transactionId]);
+  
+  // Only check dispute status when drawer opens or when explicitly needed
+  useEffect(() => {
+    if (open && assessment && transactionId && !disputeStatusChecked) {
+      console.log('Drawer opened - checking dispute status for transaction:', transactionId);
       checkDisputeStatus();
       checkCardStatus();
     }
-  }, [assessment, checkDisputeStatus, checkCardStatus, transactionId]);
+  }, [open, assessment, transactionId, disputeStatusChecked]);
   
   // 429 UX handling
   const [rateLimited, setRateLimited] = useState(false);
@@ -703,6 +722,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
         
         if (response.result?.status === 'FROZEN') {
           // Update the assessment state to reflect the frozen card status
+          console.log('Card frozen successfully, updating state...');
           setAssessment(prev => prev ? {
             ...prev,
             transaction: prev.transaction ? {
@@ -710,6 +730,7 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
               cardStatus: 'frozen'
             } : undefined
           } : null);
+          console.log('Assessment state updated with frozen card status');
           
           setSnackbar({
             open: true,

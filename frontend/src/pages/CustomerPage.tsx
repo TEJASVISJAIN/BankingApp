@@ -407,23 +407,27 @@ export function CustomerPage() {
     )
   }
 
-  // Mock data for charts
-  const spendTrendData = [
-    { month: '2024-07', amount: 45000 },
-    { month: '2024-08', amount: 52000 },
-    { month: '2024-09', amount: 38000 },
-    { month: '2024-10', amount: 61000 },
-    { month: '2024-11', amount: 48000 },
-    { month: '2024-12', amount: 55000 },
-  ]
+  // Use real data from insights API
+  const spendTrendData = insights?.monthlyTrend?.map(trend => ({
+    month: trend.month,
+    amount: trend.amount,
+    transactionCount: trend.transactionCount
+  })) || []
 
-  const categoryData = [
-    { name: 'Grocery', value: 35, color: '#8884d8' },
-    { name: 'Restaurants', value: 25, color: '#82ca9d' },
-    { name: 'Transportation', value: 20, color: '#ffc658' },
-    { name: 'Shopping', value: 15, color: '#ff7c7c' },
-    { name: 'Other', value: 5, color: '#8dd1e1' },
-  ]
+  // Use real data from insights API
+  const categoryData = insights?.categories?.map((category, index) => ({
+    name: category.category,
+    value: category.percentage,
+    color: ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'][index % 5]
+  })) || []
+  
+  // Debug: Log category data
+  React.useEffect(() => {
+    if (insights?.categories) {
+      console.log('Category data from API:', insights.categories);
+      console.log('Mapped category data:', categoryData);
+    }
+  }, [insights?.categories, categoryData]);
 
   return (
     <Box>
