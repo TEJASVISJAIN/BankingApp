@@ -3,6 +3,7 @@
 import { Pool } from 'pg';
 import { faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
+import { setupPartitioning } from './setup-partitioning';
 
 // Database connection
 const pool = new Pool({
@@ -303,6 +304,9 @@ async function createKnowledgeBase() {
 async function main() {
   try {
     console.log('🌱 Starting database seeding (small dataset)...');
+    
+    // Setup partitioning first
+    await setupPartitioning();
     
     // Create base data with smaller numbers for faster setup
     await createCustomers(50); // 50 customers instead of 100

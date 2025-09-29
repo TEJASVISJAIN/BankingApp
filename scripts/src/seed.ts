@@ -3,6 +3,7 @@
 import { Pool } from 'pg';
 import { faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
+import { setupPartitioning } from './setup-partitioning';
 
 // Database connection
 const pool = new Pool({
@@ -322,9 +323,12 @@ async function main() {
     console.log('   • 100 customers');
     console.log('   • 200 cards (2 per customer)');
     console.log('   • ~200 devices (1-3 per customer)');
-    console.log('   • 1,000,000 transactions');
+    console.log('   • 100,000 transactions');
     console.log('   • 3 knowledge base documents');
     console.log('');
+    
+    // Setup partitioning first
+    await setupPartitioning();
     
     const startTime = Date.now();
     let step = 1;
@@ -348,7 +352,7 @@ async function main() {
     step++;
     
     console.log(`[${step}/${totalSteps}] Creating transactions...`);
-    await createTransactions(1000000);
+    await createTransactions(100000);
     
     const endTime = Date.now();
     const duration = ((endTime - startTime) / 1000).toFixed(1);
@@ -360,7 +364,7 @@ async function main() {
     console.log('   • 100 customers');
     console.log('   • 200 cards');
     console.log('   • ~200 devices');
-    console.log('   • 1,000,000 transactions');
+    console.log('   • 100,000 transactions');
     console.log('   • 3 knowledge base documents');
   } catch (error) {
     console.error('❌ Error during seeding:', error);
