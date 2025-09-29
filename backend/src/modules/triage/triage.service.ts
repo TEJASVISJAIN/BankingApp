@@ -4,6 +4,7 @@ import { DatabaseService } from '../database/database.service';
 import { AgentOrchestratorService } from './agent-orchestrator.service';
 import { TriageRequestDto } from './dto/triage.dto';
 import { secureLogger } from '../../utils/logger';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class TriageService {
@@ -13,9 +14,42 @@ export class TriageService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly agentOrchestrator: AgentOrchestratorService,
+    private readonly redisService: RedisService,
   ) {}
 
   async startTriage(request: TriageRequestDto): Promise<{ sessionId: string; status: string }> {
+    // Check for cached results first
+    const cacheKey = `triage:${request.customerId}:${request.transactionId}`;
+    const cachedResult = await this.redisService.get(cacheKey);
+    
+    if (cachedResult) {
+      secureLogger.info('Returning cached triage result', { 
+        customerId: request.customerId, 
+        transactionId: request.transactionId 
+      });
+      
+      const sessionId = uuidv4();
+      const cachedData = JSON.parse(cachedResult);
+      
+      // Initialize session with cached data
+      this.activeSessions.set(sessionId, {
+        sessionId,
+        status: 'completed',
+        startTime: Date.now(),
+        request,
+        assessment: cachedData.assessment,
+        endTime: Date.now(),
+      });
+
+      // Emit cached result immediately
+      this.emitSSEEvent(sessionId, 'decision_finalized', {
+        assessment: cachedData.assessment,
+        timestamp: new Date().toISOString()
+      });
+
+      return { sessionId, status: 'completed' };
+    }
+
     const sessionId = uuidv4();
     
     // Initialize session
@@ -62,6 +96,24 @@ export class TriageService {
         session.assessment = result.assessment || result;
         session.endTime = Date.now();
       }
+
+      // Cache the results in Redis
+      const cacheKey = `triage:${request.customerId}:${request.transactionId}`;
+      const cacheData = {
+        assessment: result.assessment,
+        timestamp: new Date().toISOString(),
+        customerId: request.customerId,
+        transactionId: request.transactionId
+      };
+      
+      // Cache for 1 hour (3600 seconds)
+      await this.redisService.set(cacheKey, JSON.stringify(cacheData), 3600);
+      
+      secureLogger.info('Triage results cached in Redis', { 
+        cacheKey, 
+        customerId: request.customerId, 
+        transactionId: request.transactionId 
+      });
 
       // Emit decision_finalized event
       this.emitSSEEvent(sessionId, 'decision_finalized', {
@@ -190,5 +242,16 @@ export class TriageService {
     }
 
     return session;
+  }
+
+  async clearTriageCache(customerId: string, transactionId: string): Promise<void> {
+    const cacheKey = `triage:${customerId}:${transactionId}`;
+    await this.redisService.del(cacheKey);
+    
+    secureLogger.info('Triage cache cleared', { 
+      cacheKey, 
+      customerId, 
+      transactionId 
+    });
   }
 }

@@ -2,6 +2,7 @@ import {
   Controller, 
   Post, 
   Get, 
+  Delete,
   Param, 
   Body, 
   UseGuards, 
@@ -134,5 +135,18 @@ export class TriageController {
       this.triageService.removeSSEConnection(sessionId);
       res.end();
     }
+  }
+
+  @Delete('cache/:customerId/:transactionId')
+  @ApiOperation({ summary: 'Clear triage cache for specific customer and transaction' })
+  @ApiParam({ name: 'customerId', description: 'Customer ID' })
+  @ApiParam({ name: 'transactionId', description: 'Transaction ID' })
+  @ApiResponse({ status: 200, description: 'Cache cleared successfully' })
+  async clearCache(
+    @Param('customerId') customerId: string,
+    @Param('transactionId') transactionId: string,
+  ) {
+    await this.triageService.clearTriageCache(customerId, transactionId);
+    return { message: 'Cache cleared successfully' };
   }
 }

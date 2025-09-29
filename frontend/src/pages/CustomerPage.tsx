@@ -34,6 +34,7 @@ import {
   Person,
   Email,
   Phone,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material'
 import { useQuery } from '@tanstack/react-query'
 import apiService from '../services/apiService'
@@ -69,11 +70,13 @@ function CustomerListPage() {
   const [pageSize] = useState(10)
 
   // Fetch fraud alerts to get customer data
-  const { data: fraudAlerts, isLoading, error } = useQuery({
+  const { data: fraudAlertsResponse, isLoading, error } = useQuery({
     queryKey: ['fraud-alerts'],
-    queryFn: () => apiService.getFraudTriage(),
+    queryFn: () => apiService.getFraudTriage(1, 100),
     staleTime: 30 * 1000, // 30 seconds
   })
+
+  const fraudAlerts = fraudAlertsResponse?.data || []
 
   // Extract unique customers from fraud alerts
   const customers = useMemo(() => {
@@ -318,6 +321,7 @@ function CustomerListPage() {
 
 export function CustomerPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [tabValue, setTabValue] = useState(0)
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState({
@@ -328,32 +332,35 @@ export function CustomerPage() {
   })
 
   // Fetch customer profile
-  const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
+  const { data: profile, isLoading: profileLoading, error: profileError, isFetching: profileFetching } = useQuery({
     queryKey: ['customer', id, 'profile'],
     queryFn: () => apiService.getCustomerProfile(id!),
     enabled: !!id,
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
   // Fetch customer insights
-  const { data: insights } = useQuery({
+  const { data: insights, isLoading: insightsLoading } = useQuery({
     queryKey: ['customer', id, 'insights'],
     queryFn: () => apiService.getCustomerInsights(id!),
-    enabled: !!id,
+    enabled: !!id && !!profile, // Only fetch insights after profile is loaded
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
-
-  // Debug: Log insights data
-  React.useEffect(() => {
-    if (insights) {
-      console.log('Customer insights data:', insights)
-    }
-  }, [insights])
 
   // Fetch transactions
-  const { data: transactions } = useQuery({
+  const { data: transactions, isLoading: transactionsLoading } = useQuery({
     queryKey: ['customer', id, 'transactions', page, filters],
     queryFn: () => apiService.getCustomerTransactions(id!, filters.from, filters.to, page, 20),
-    enabled: !!id,
+    enabled: !!id && !!profile, // Only fetch transactions after profile is loaded
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   })
+
 
   // If no ID, show customer list
   if (!id) {
@@ -373,75 +380,110 @@ export function CustomerPage() {
     setPage(newPage)
   }
 
-  if (profileLoading) {
+  // Show loading state while profile is being fetched
+  if (profileLoading || profileFetching) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <Typography>Loading customer profile...</Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px" flexDirection="column">
+        <CircularProgress size={40} />
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Loading customer profile...
+        </Typography>
       </Box>
     )
   }
 
+  // Show error state if profile fetch failed
   if (profileError) {
     return (
-      <Box>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Customer Not Found
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h4" component="h1" gutterBottom color="error">
+          Error Loading Customer
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          The customer with ID "{id}" could not be found.
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+          Failed to load customer with ID "{id}". Please try again.
         </Typography>
+        <Button 
+          variant="contained" 
+          onClick={() => window.location.reload()}
+          startIcon={<RefreshIcon />}
+        >
+          Try Again
+        </Button>
       </Box>
     )
   }
 
+  // Show not found state if no profile data
   if (!profile) {
     return (
-      <Box>
+      <Box sx={{ p: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Customer Not Found
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
           The customer with ID "{id}" could not be found.
         </Typography>
+        <Button 
+          variant="outlined" 
+          onClick={() => navigate('/customers')}
+        >
+          Back to Customers
+        </Button>
       </Box>
     )
   }
 
-  // Use real data from insights API
-  const spendTrendData = insights?.monthlyTrend?.map(trend => ({
-    month: trend.month,
-    amount: trend.amount,
-    transactionCount: trend.transactionCount
-  })) || []
-
-  // Use real data from insights API
-  const categoryData = insights?.categories?.map((category, index) => ({
-    name: category.category,
-    value: category.percentage,
-    color: ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'][index % 5]
-  })) || []
-  
-  // Debug: Log category data
-  React.useEffect(() => {
-    if (insights?.categories) {
-      console.log('Category data from API:', insights.categories);
-      console.log('Mapped category data:', categoryData);
+  // Use real data from insights API with proper null checks
+  const spendTrendData = useMemo(() => {
+    try {
+      if (!insights?.monthlyTrend || !Array.isArray(insights.monthlyTrend)) return []
+      return insights.monthlyTrend.map(trend => ({
+        month: String(trend?.month || ''),
+        amount: Number(trend?.amount || 0),
+        transactionCount: Number(trend?.transactionCount || 0)
+      }))
+    } catch (error) {
+      console.error('Error processing spend trend data:', error)
+      return []
     }
-  }, [insights?.categories, categoryData]);
+  }, [insights?.monthlyTrend])
+
+  // Use real data from insights API with proper null checks
+  const categoryData = useMemo(() => {
+    try {
+      if (!insights?.categories || !Array.isArray(insights.categories)) return []
+      return insights.categories.map((category, index) => ({
+        name: String(category?.category || ''),
+        value: Number(category?.percentage || 0),
+        color: ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'][index % 5]
+      }))
+    } catch (error) {
+      console.error('Error processing category data:', error)
+      return []
+    }
+  }, [insights?.categories])
+  
+
+  // Safety check to prevent object rendering
+  const safeProfile = {
+    name: String(profile?.name || 'Unknown Customer'),
+    email: String(profile?.email || 'No email'),
+    riskFlags: Array.isArray(profile?.riskFlags) ? profile.riskFlags : []
+  }
 
   return (
     <Box>
       {/* Customer Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          {profile.name}
+          {safeProfile.name}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-          <Chip label={profile.email} variant="outlined" />
-          {(profile.riskFlags || []).map((flag: string, index: number) => (
+          <Chip label={safeProfile.email} variant="outlined" />
+          {safeProfile.riskFlags.map((flag: string, index: number) => (
             <Chip
               key={index}
-              label={flag}
+              label={String(flag)}
               color="warning"
               size="small"
             />
@@ -498,41 +540,50 @@ export function CustomerPage() {
             </Grid>
           </Box>
 
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Merchant</TableCell>
-                  <TableCell>Amount</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Device</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {transactions?.transactions.map((txn: any) => (
-                  <TableRow key={txn.id}>
-                    <TableCell>
-                      {new Date(txn.timestamp).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{txn.merchant}</TableCell>
-                    <TableCell>
-                      <Typography
-                        color={txn.amount < 0 ? 'error' : 'success'}
-                        fontWeight="medium"
-                      >
-                        ₹{(txn.amount / 100).toLocaleString()}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={txn.mcc} size="small" />
-                    </TableCell>
-                    <TableCell>{txn.deviceId}</TableCell>
+          {transactionsLoading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+              <CircularProgress />
+              <Typography variant="body1" sx={{ ml: 2 }}>
+                Loading transactions...
+              </Typography>
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Date</TableCell>
+                    <TableCell>Merchant</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Category</TableCell>
+                    <TableCell>Device</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {transactions?.transactions?.map((txn: any) => (
+                    <TableRow key={txn.id}>
+                      <TableCell>
+                        {txn.timestamp ? new Date(txn.timestamp).toLocaleDateString() : 'N/A'}
+                      </TableCell>
+                      <TableCell>{txn.merchant || 'N/A'}</TableCell>
+                      <TableCell>
+                        <Typography
+                          color={txn.amount < 0 ? 'error' : 'success'}
+                          fontWeight="medium"
+                        >
+                          ₹{((txn.amount || 0) / 100).toLocaleString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={txn.mcc || 'N/A'} size="small" />
+                      </TableCell>
+                      <TableCell>{txn.deviceId || 'N/A'}</TableCell>
+                    </TableRow>
+                  )) || []}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
 
           {transactions && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
@@ -548,7 +599,15 @@ export function CustomerPage() {
 
         {/* Insights Tab */}
         <TabPanel value={tabValue} index={1}>
-          <Grid container spacing={3}>
+          {insightsLoading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px" flexDirection="column">
+              <CircularProgress size={40} />
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Loading customer insights...
+              </Typography>
+            </Box>
+          ) : (
+            <Grid container spacing={3}>
             {/* Summary Cards */}
             <Grid item xs={12} md={4}>
               <Card>
@@ -558,10 +617,10 @@ export function CustomerPage() {
                     <Typography variant="h6">Total Spend</Typography>
                   </Box>
                   <Typography variant="h4" color="primary">
-                    ₹{((insights?.totalSpend || 0) / 100).toLocaleString()}
+                    ₹{((Number(insights?.totalSpend) || 0) / 100).toLocaleString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {insights?.transactionCount || 0} transactions
+                    {Number(insights?.transactionCount) || 0} transactions
                   </Typography>
                 </CardContent>
               </Card>
@@ -575,10 +634,10 @@ export function CustomerPage() {
                     <Typography variant="h6">Top Merchant</Typography>
                   </Box>
                   <Typography variant="h6">
-                    {insights?.topMerchants?.[0]?.merchant || 'N/A'}
+                    {String(insights?.topMerchants?.[0]?.merchant || 'N/A')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    ₹{((insights?.topMerchants?.[0]?.amount || 0) / 100).toLocaleString()}
+                    ₹{((Number(insights?.topMerchants?.[0]?.amount) || 0) / 100).toLocaleString()}
                   </Typography>
                 </CardContent>
               </Card>
@@ -592,7 +651,7 @@ export function CustomerPage() {
                     <Typography variant="h6">Risk Score</Typography>
                   </Box>
                   <Typography variant="h4" color="warning.main">
-                    {insights?.riskScore || 0}
+                    {Number(insights?.riskScore) || 0}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Risk assessment
@@ -650,6 +709,7 @@ export function CustomerPage() {
               </Card>
             </Grid>
           </Grid>
+          )}
         </TabPanel>
       </Paper>
     </Box>

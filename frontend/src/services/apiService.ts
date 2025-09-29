@@ -120,9 +120,19 @@ class ApiService {
     }
   }
 
-  async getFraudTriage(): Promise<FraudTriageAlert[]> {
+  async getFraudTriage(page: number = 1, size: number = 20): Promise<{
+    data: FraudTriageAlert[];
+    pagination: {
+      page: number;
+      size: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }> {
     try {
-      const response = await api.get('/api/dashboard/fraud-triage')
+      const response = await api.get(`/api/dashboard/fraud-triage?page=${page}&size=${size}`)
       return response.data
     } catch (error) {
       console.error('Failed to fetch fraud triage:', error)
@@ -379,6 +389,26 @@ class ApiService {
       return response.data
     } catch (error) {
       console.error('Failed to get trace:', error)
+      throw error
+    }
+  }
+
+  async clearTriageCache(customerId: string, transactionId: string) {
+    try {
+      const response = await api.delete(`/api/triage/cache/${customerId}/${transactionId}`)
+      return response.data
+    } catch (error) {
+      console.error('Failed to clear triage cache:', error)
+      throw error
+    }
+  }
+
+  async getSessionStatus(sessionId: string) {
+    try {
+      const response = await api.get(`/api/triage/session/${sessionId}`)
+      return response.data
+    } catch (error) {
+      console.error('Failed to get session status:', error)
       throw error
     }
   }

@@ -15,6 +15,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material'
+import Pagination from '../components/Pagination'
 import {
   Visibility,
 } from '@mui/icons-material'
@@ -29,14 +30,19 @@ export function AlertsPage() {
   const navigate = useNavigate()
   const [selectedAlert, setSelectedAlert] = React.useState<any>(null)
   const [triageDrawerOpen, setTriageDrawerOpen] = React.useState(false)
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [pageSize, setPageSize] = React.useState(20)
 
   // Fetch real fraud alerts data
-  const { data: fraudAlerts, isLoading, error } = useQuery({
-    queryKey: ['fraud-alerts'],
-    queryFn: () => apiService.getFraudTriage(),
+  const { data: fraudAlertsResponse, isLoading, error } = useQuery({
+    queryKey: ['fraud-alerts', currentPage, pageSize],
+    queryFn: () => apiService.getFraudTriage(currentPage, pageSize),
     staleTime: 30 * 1000, // 30 seconds
     refetchInterval: 60 * 1000, // Refetch every minute
   })
+
+  const fraudAlerts = fraudAlertsResponse?.data || []
+  const pagination = fraudAlertsResponse?.pagination
 
   // Auto-open triage drawer for specific alert ID
   React.useEffect(() => {
@@ -76,6 +82,15 @@ export function AlertsPage() {
     }
     setSelectedAlert(alertWithReasons)
     setTriageDrawerOpen(true)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleSizeChange = (size: number) => {
+    setPageSize(size)
+    setCurrentPage(1) // Reset to first page when changing size
   }
 
   const getDefaultRiskReasons = (riskScore: number, riskLevel: string) => {
@@ -140,7 +155,7 @@ export function AlertsPage() {
   return (
     <Box>
       <Typography variant="h4" component="h1" gutterBottom>
-        Fraud Alerts Queue ({alerts.length} alerts)
+        Fraud Alerts Queue ({pagination ? `${pagination.total} total alerts` : `${alerts.length} alerts`})
         {alertId && selectedAlert && (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Viewing: {selectedAlert.customerName} - {selectedAlert.merchant} (₹{(selectedAlert.amount / 100).toLocaleString()})
@@ -229,6 +244,20 @@ export function AlertsPage() {
             </TableBody>
           </Table>
         </TableContainer>
+        
+        {/* Pagination */}
+        {pagination && (
+          <Pagination
+            page={pagination.page}
+            size={pagination.size}
+            total={pagination.total}
+            totalPages={pagination.totalPages}
+            hasNext={pagination.hasNext}
+            hasPrev={pagination.hasPrev}
+            onPageChange={handlePageChange}
+            onSizeChange={handleSizeChange}
+          />
+        )}
       </Paper>
 
       {/* Triage Drawer */}

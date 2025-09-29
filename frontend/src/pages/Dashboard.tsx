@@ -42,14 +42,14 @@ export function Dashboard() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  const { data: fraudTriage, isLoading: fraudTriageLoading, error: fraudTriageError } = useQuery({
+  const { data: fraudTriageResponse, isLoading: fraudTriageLoading, error: fraudTriageError } = useQuery({
     queryKey: ['dashboard', 'fraud-triage'],
-    queryFn: () => apiService.getFraudTriage(),
+    queryFn: () => apiService.getFraudTriage(1, 20),
     staleTime: 30 * 1000, // 30 seconds
   })
 
   const displayKpis = kpis || { totalSpend: 0, highRiskAlerts: 0, disputesOpened: 0, avgTriageTime: 0, totalTransactions: 0, fraudRate: 0 }
-  const displayTriage = fraudTriage || []
+  const displayTriage = fraudTriageResponse?.data || []
 
   const handleViewTriage = (alert: any) => {
     setSelectedAlert(alert)

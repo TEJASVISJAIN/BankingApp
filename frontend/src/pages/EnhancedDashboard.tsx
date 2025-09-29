@@ -32,6 +32,7 @@ import apiService from '../services/apiService';
 import TriageDrawer from '../components/TriageDrawer';
 import VirtualizedTable from '../components/VirtualizedTable';
 import AccessibleDrawer from '../components/AccessibleDrawer';
+import Pagination from '../components/Pagination';
 
 
 interface FraudTriageItem {
@@ -52,6 +53,8 @@ const EnhancedDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -66,11 +69,15 @@ const EnhancedDashboard: React.FC = () => {
   });
 
   // Fetch fraud triage data
-  const { data: fraudTriage, isLoading: triageLoading, error: triageError } = useQuery({
-    queryKey: ['fraud-triage'],
-    queryFn: () => apiService.getFraudTriage(),
+  const { data: fraudTriageResponse, isLoading: triageLoading, error: triageError } = useQuery({
+    queryKey: ['fraud-triage', currentPage, pageSize],
+    queryFn: () => apiService.getFraudTriage(currentPage, pageSize),
     refetchInterval: 10000, // Refresh every 10 seconds
   });
+
+  // Extract fraud triage data and pagination info
+  const fraudTriage = fraudTriageResponse?.data || [];
+  const pagination = fraudTriageResponse?.pagination;
 
   // Filtered fraud triage data
   const filteredFraudTriage = useMemo(() => {
@@ -99,6 +106,15 @@ const EnhancedDashboard: React.FC = () => {
   const handleRefresh = () => {
     // Trigger refetch of all queries
     window.location.reload();
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset to first page when changing size
   };
 
   const getRiskColor = (level: string) => {
@@ -371,7 +387,7 @@ const EnhancedDashboard: React.FC = () => {
             Fraud Triage Queue
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {filteredFraudTriage.length} alerts found
+            {pagination ? `${pagination.total} total alerts` : `${filteredFraudTriage.length} alerts found`}
           </Typography>
         </Box>
         
@@ -382,6 +398,20 @@ const EnhancedDashboard: React.FC = () => {
           aria-label="Fraud triage alerts table"
           aria-describedby="fraud-triage-description"
         />
+        
+        {/* Pagination */}
+        {pagination && (
+          <Pagination
+            page={pagination.page}
+            size={pagination.size}
+            total={pagination.total}
+            totalPages={pagination.totalPages}
+            hasNext={pagination.hasNext}
+            hasPrev={pagination.hasPrev}
+            onPageChange={handlePageChange}
+            onSizeChange={handleSizeChange}
+          />
+        )}
       </Paper>
 
       {/* Triage Drawer */}

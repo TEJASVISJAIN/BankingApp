@@ -9,6 +9,7 @@
     "seed-quick": "ts-node src/seed-quick.ts",
     "seed-large": "ts-node src/seed.ts",
     "seed-small": "ts-node src/seed-small.ts",
+    "seed-100k": "ts-node src/seed-100k.ts",
     "eval": "ts-node src/eval-cli.ts",
     "optimize": "ts-node src/optimize.ts",
     "acceptance": "ts-node src/acceptance-tests.ts",

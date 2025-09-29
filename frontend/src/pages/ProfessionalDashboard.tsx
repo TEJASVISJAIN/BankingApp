@@ -60,11 +60,13 @@ export default function ProfessionalDashboard() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: fraudAlerts, isLoading: alertsLoading, error: alertsError, refetch: refetchAlerts } = useQuery({
+  const { data: fraudAlertsResponse, isLoading: alertsLoading, error: alertsError, refetch: refetchAlerts } = useQuery({
     queryKey: ['dashboard', 'fraud-alerts'],
-    queryFn: () => apiService.getFraudTriage(),
+    queryFn: () => apiService.getFraudTriage(1, 20),
     staleTime: 30 * 1000,
   });
+
+  const fraudAlerts = fraudAlertsResponse?.data || [];
 
   // WebSocket connection and real-time updates
   useEffect(() => {

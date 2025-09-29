@@ -41,6 +41,7 @@ import {
   Gavel,
   ContactPhone,
   VpnKey,
+  Refresh,
 } from '@mui/icons-material';
 import apiService from '../services/apiService';
 
@@ -115,6 +116,15 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [streamConnected, setStreamConnected] = useState(false);
+  
+  // Cache for fraud analysis results
+  const [cachedAnalysis, setCachedAnalysis] = useState<{
+    customerId: string;
+    transactionId: string;
+    assessment: FraudAssessment;
+    steps: AgentStep[];
+    timestamp: number;
+  } | null>(null);
   
   // Action states
   const [actionDialog, setActionDialog] = useState<{
@@ -200,6 +210,26 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
     setDisputeStatusChecked(false);
   }, [transactionId]);
   
+  // Check for cached analysis when drawer opens
+  useEffect(() => {
+    if (open && customerId && transactionId) {
+      // Check if we have cached results for this customer/transaction
+      if (cachedAnalysis && 
+          cachedAnalysis.customerId === customerId && 
+          cachedAnalysis.transactionId === transactionId) {
+        console.log('Loading cached analysis results');
+        setAssessment(cachedAnalysis.assessment);
+        setSteps(cachedAnalysis.steps);
+        setIsRunning(false);
+        setError(null);
+      } else {
+        // No cached results, start fresh analysis
+        console.log('No cached results, starting fresh analysis');
+        startTriage();
+      }
+    }
+  }, [open, customerId, transactionId]);
+
   // Only check dispute status when drawer opens or when explicitly needed
   useEffect(() => {
     if (open && assessment && transactionId && !disputeStatusChecked) {
@@ -313,12 +343,53 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
 
       setSessionId(response.sessionId);
 
-      // Connect to SSE stream
-      connectToStream(response.sessionId);
+      // Check if this is a cached result (completed status)
+      if (response.status === 'completed') {
+        console.log('Received cached results from backend');
+        setIsRunning(false);
+        // For cached results, we need to get the session data directly
+        // instead of connecting to SSE stream
+        setTimeout(async () => {
+          try {
+            const sessionData = await apiService.getSessionStatus(response.sessionId);
+            if (sessionData && sessionData.assessment) {
+              setAssessment(sessionData.assessment);
+              setSteps(sessionData.steps || []);
+            }
+          } catch (error) {
+            console.error('Failed to get cached session data:', error);
+          }
+        }, 100);
+      } else {
+        // Fresh analysis - connect to SSE stream
+        console.log('Starting fresh analysis');
+        connectToStream(response.sessionId);
+      }
     } catch (err) {
       setError((err as Error)?.message || 'Failed to start triage');
       setIsRunning(false);
     }
+  };
+
+  // Function to handle "Test Again" button
+  const handleTestAgain = async () => {
+    console.log('Test Again clicked - clearing cache and starting fresh analysis');
+    
+    try {
+      // Clear backend cache first
+      await apiService.clearTriageCache(customerId, transactionId);
+      console.log('Backend cache cleared');
+    } catch (error) {
+      console.error('Failed to clear backend cache:', error);
+      // Continue anyway - the frontend cache will be cleared
+    }
+    
+    // Clear frontend cache
+    setCachedAnalysis(null);
+    setAssessment(null);
+    setSteps([]);
+    setError(null);
+    startTriage();
   };
 
   const connectToStream = (sessionId: string) => {
@@ -405,6 +476,15 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
               console.log('Mapped assessment:', mappedAssessment);
               setAssessment(mappedAssessment);
               setIsRunning(false);
+              
+              // Cache the analysis results
+              setCachedAnalysis({
+                customerId,
+                transactionId,
+                assessment: mappedAssessment,
+                steps: [...steps],
+                timestamp: Date.now()
+              });
             }
             break;
             
@@ -798,9 +878,22 @@ const TriageDrawer: React.FC<TriageDrawerProps> = ({
       <Box sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6">Fraud Triage Analysis</Typography>
-          <IconButton onClick={handleClose}>
-            <Close />
-          </IconButton>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {assessment && !isRunning && (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleTestAgain}
+                startIcon={<Refresh />}
+                sx={{ minWidth: '120px' }}
+              >
+                Test Again
+              </Button>
+            )}
+            <IconButton onClick={handleClose}>
+              <Close />
+            </IconButton>
+          </Box>
         </Box>
 
         <Box sx={{ mb: 2 }}>

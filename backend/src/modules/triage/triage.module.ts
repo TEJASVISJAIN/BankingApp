@@ -14,10 +14,11 @@ import { PromptInjectionDefenseService } from './prompt-injection-defense.servic
 import { DatabaseModule } from '../database/database.module';
 import { AuthModule } from '../auth/auth.module';
 import { MetricsModule } from '../metrics/metrics.module';
+import { RedisModule } from '../redis/redis.module';
 import { GroqService } from '../../services/groq.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, MetricsModule],
+  imports: [DatabaseModule, AuthModule, MetricsModule, RedisModule],
   controllers: [TriageController],
   providers: [
     TriageService,

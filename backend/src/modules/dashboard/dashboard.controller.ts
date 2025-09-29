@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ApiKeyGuard } from '../auth/guards/api-key.guard';
 import { DashboardService } from './dashboard.service';
@@ -19,8 +19,8 @@ export class DashboardController {
   @Get('fraud-triage')
   @ApiOperation({ summary: 'Get fraud triage alerts' })
   @ApiResponse({ status: 200, description: 'Fraud triage data retrieved successfully' })
-  async getFraudTriage() {
-    return this.dashboardService.getFraudTriage();
+  async getFraudTriage(@Query('page') page: number = 1, @Query('size') size: number = 20) {
+    return this.dashboardService.getFraudTriage(page, size);
   }
 
   @Get('disputes')
@@ -28,5 +28,12 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Disputes retrieved successfully' })
   async getDisputes() {
     return this.dashboardService.getDisputes();
+  }
+
+  @Get('customer/:customerId/fraud-analysis')
+  @ApiOperation({ summary: 'Get customer-specific fraud analysis' })
+  @ApiResponse({ status: 200, description: 'Customer fraud analysis completed successfully' })
+  async getCustomerFraudAnalysis(@Param('customerId') customerId: string) {
+    return this.dashboardService.getCustomerFraudAnalysis(customerId);
   }
 }
